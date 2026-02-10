@@ -48,18 +48,20 @@
 
 ## 2. 서비스별 상세
 
-| 서비스 | 스택 | 포트 | 도메인 | 역할 |
-|--------|------|------|--------|------|
-| jabis-cert | Next.js 14 | 3000 | jabis-cert.jinhakapply.com | 통합인증 (OAuth + PKCE) |
-| jabis-api-gateway | Fastify + TS | 3100 | jabis-gateway.jinhakapply.com | SQL 쿼리 실행, Dashboard API |
-| jabis | Vite + React | 3000 | jabis.jinhakapply.com | 메인 운영 앱 |
-| jabis-template | Vite + React | 3000 | jabis-template.jinhakapply.com | 템플릿/데모 |
-| jabis-lab | Vite + React | 3000 | jabis-lab.jinhakapply.com | 실험적 개발 플랫폼 |
-| jabis-dev | Vite + React | 3000 | jabis.jinhakapply.com/dev | 개발부서 전용 |
-| jabis-night-builder | Node.js + TS | - | - | 야간 자동 구현 콘솔 |
-| jabis-bitbucket-sync | Node.js + TS | 3010 | jabis-bitbucket-sync.jinhakapply.com | Bitbucket 동기화 |
-| jabis-emergency-console | Node.js + TS | 3005 | jabis-emergency.jinhakapply.com | 긴급 DB 접근 |
-| jabis-design-system | Vite + React | 3000 | jabis-design.jinhakapply.com | 디자인 시스템 문서 |
+> 기술 스택은 [프로젝트 맵](../onboarding/project-map.md) 참조
+
+| 서비스 | 포트 | 도메인 | 역할 |
+|--------|------|--------|------|
+| jabis-cert | 3000 | jabis-cert.jinhakapply.com | 통합인증 (OAuth + PKCE) |
+| jabis-api-gateway | 3100 | jabis-gateway.jinhakapply.com | SQL 쿼리 실행, Dashboard API |
+| jabis | 3000 | jabis.jinhakapply.com | 메인 운영 앱 |
+| jabis-template | 3000 | jabis-template.jinhakapply.com | 템플릿/데모 |
+| jabis-lab | 3000 | jabis-lab.jinhakapply.com | 실험적 개발 플랫폼 |
+| jabis-dev | 3000 | jabis.jinhakapply.com/dev | 개발부서 전용 |
+| jabis-night-builder | - | - | 야간 자동 구현 콘솔 |
+| jabis-bitbucket-sync | 3010 | jabis-bitbucket-sync.jinhakapply.com | Bitbucket 동기화 |
+| jabis-emergency-console | 3005 | jabis-emergency.jinhakapply.com | 긴급 DB 접근 |
+| jabis-design-system | 3000 | jabis-design.jinhakapply.com | 디자인 시스템 문서 |
 
 ---
 
@@ -80,7 +82,8 @@
 
 ## 4. API Gateway 구조
 
-- **GET/POST만 허용** (PUT/DELETE 사용 금지)
+> HTTP Method 규칙은 [코딩 스타일](../policies/coding-style.md#4-http-method-규칙) 참조
+
 - 모든 엔드포인트는 `gateway.api_endpoints` 테이블에 등록
 - parameters는 JSONB로 정의: `[{name, type, required, default, description}]`
 - 파라미터 검증(`validateParams`) 후 SQL 쿼리 실행

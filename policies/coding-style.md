@@ -29,15 +29,7 @@
 
 ## 3. 프로젝트별 기술 스택
 
-| 프로젝트 | 스택 | 언어 | 비고 |
-|----------|------|------|------|
-| jabis, jabis-template, jabis-lab, jabis-dev | Vite + React + Zustand | JavaScript (JSX) | 프론트엔드 |
-| jabis-cert | Next.js 14 (App Router) | TypeScript | 통합인증 서버 |
-| jabis-api-gateway | Fastify + TypeScript | TypeScript | GET/POST만 사용 |
-| jabis-night-builder | Node.js + TypeScript | TypeScript | 24시간 콘솔 |
-| jabis-bitbucket-sync | Node.js + TypeScript | TypeScript | 크론/동기화 |
-| jabis-common | pnpm monorepo | JavaScript | @jabis/* 패키지 |
-| jabis-helm | Helm + ArgoCD | YAML | K8S 배포 |
+> [프로젝트 맵](../onboarding/project-map.md) 참조
 
 ---
 
@@ -62,7 +54,7 @@ body: { action: 'delete', id: '123' }
 
 ## 5. 필수 규칙
 
-- **ID 컬럼**: varchar(30) — UUID(36자) 사용 금지, 30자 이하 ID 생성
+- **ID 컬럼**: 기본 varchar(30), 필요 시 varchar(50)까지 허용 — PostgreSQL native UUID 타입 사용 금지
 - **파일 크기**: 최대 400줄 권장, 800줄 절대 상한
 - **불변성**: 불변성(immutability) 우선
 - **하드코딩 금지**: 환경변수 또는 Vault 시크릿 사용

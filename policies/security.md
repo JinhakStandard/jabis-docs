@@ -11,6 +11,26 @@
 - 환경변수(`.env.*`) 또는 **Vault Agent**를 통해 주입
 - `.env` 파일은 반드시 `.gitignore`에 포함
 
+### 환경변수 3단계 구조
+
+| 단계 | 위치 | 대상 | 예시 |
+|------|------|------|------|
+| 1단계 | Dockerfile ENV | 비민감 설정값 | NODE_ENV, PORT, DB_HOST, DB_PORT |
+| 2단계 | Vault Agent → keys/vault-key.json | 민감 시크릿 | PASSWORD, SECRET, TOKEN, API_KEY |
+| 3단계 | .env 파일 (로컬 전용) | 개발 환경 설정 | .gitignore로 제외, 배포 안 됨 |
+
+```
+[Docker Build]                    [K8S Pod 시작]
+Dockerfile ENV (비민감) ──────►   ENV 변수로 설정
+                                  +
+                                  Vault Agent init container
+                                  → keys/vault-key.json 주입 (민감)
+                                  +
+                                  앱이 vault-key.json 읽어서 사용
+```
+
+> **예외**: jabis-emergency-console은 내부 전용 툴로 .env.production이 커밋됨
+
 ### Vault 연동 규칙
 - Vault 시크릿 작업 시 반드시 `vault-key.json`과 Vault 서버 키 **비교 후** 진행
 - Docker 이미지에 시크릿 포함 금지 — Vault Agent init container 사용
