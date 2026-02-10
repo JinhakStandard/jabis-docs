@@ -84,6 +84,29 @@ export const portalMenu = staticMenu([
 ])
 ```
 
+## @jabis/layout 역할 전환 기능
+
+Header 컴포넌트에서 역할 배지 클릭 시 역할 전환 드롭다운을 표시할 수 있다.
+
+```jsx
+<DashboardLayout
+  // ...기존 props...
+  availableRoles={[
+    { id: 'developer', label: '개발자' },
+    { id: 'operation', label: '운영자' },
+    // ...
+  ]}
+  onRoleChange={(roleId) => {
+    localStorage.setItem('jabis_role', roleId)
+    navigate(`/${roleId}`)
+  }}
+>
+```
+
+- `availableRoles`: `[{ id, label }]` 배열. `@jabis/menu`의 `ROLES`와 `roleLabels`로 생성 가능.
+- `onRoleChange`: 역할 변경 시 호출. localStorage 업데이트 + 페이지 이동 처리.
+- 두 prop이 모두 없으면 기존 정적 Badge로 폴백 (하위 호환).
+
 ## 프로젝트 고유 규칙
 - pnpm 필수 (npm 사용 금지)
 - 모든 UI 컴포넌트는 @jabis/ui로 export
