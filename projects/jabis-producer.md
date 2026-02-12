@@ -17,6 +17,9 @@
 ```
 jabis-producer/
 ├── pnpm-workspace.yaml
+├── Dockerfile             # multi-stage pnpm 빌드
+├── bitbucket-pipelines.yml # CI/CD 파이프라인
+├── .dockerignore
 ├── packages/              # @jabis/common (git submodule)
 │   ├── ui/                # @jabis/ui
 │   ├── layout/            # @jabis/layout
@@ -107,6 +110,19 @@ pnpm preview              # 빌드 결과 미리보기
 - Vite 프록시: `/gateway-api` → `VITE_API_GATEWAY_URL`
 - Bearer 토큰 자동 주입 (axios 인터셉터, @jabis/auth 토큰)
 - API: 엔드포인트 CRUD, Dev Tasks, Access Logs
+
+## Dockerfile
+- node:20-alpine multi-stage pnpm 빌드
+- jabis-common git clone → packages 빌드 → producer 빌드
+- `dist/producer/` 하위에 빌드 결과 복사 (Vite base path `/producer/` 대응)
+- serve.json: `/producer/**` → `/producer/index.html` (SPA rewrite)
+- serve -s dist -l 3000
+
+## Bitbucket Pipeline
+- Pattern A
+- master → 자동 deploy (deploy-pipeline)
+- custom: deploy-prod-pipeline (수동 트리거)
+- jabis-common clone → Docker Build → Harbor Push → jabis-helm 업데이트 → Teams 알림
 
 ## 배포
 - Kubernetes (jabis-helm)
