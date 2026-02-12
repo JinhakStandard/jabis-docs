@@ -14,6 +14,7 @@
 │  jabis-lab      - 실험적 개발 플랫폼                          │
 │  jabis-dev      - 개발부서 전용                               │
 │  jabis-design-system - 디자인 시스템 문서                     │
+│  jabis-producer - 프로듀서 전용 (API 관리, Maker)             │
 └──────────┬──────────────────────────────────┬────────────────┘
            │ OAuth (PKCE)                     │ REST API
            ▼                                  ▼
@@ -61,6 +62,7 @@
 | jabis-night-builder | - | - | 야간 자동 구현 콘솔 |
 | jabis-bitbucket-sync | 3010 | jabis-bitbucket-sync.jinhakapply.com | Bitbucket 동기화 |
 | jabis-emergency-console | 3005 | jabis-emergency.jinhakapply.com | 긴급 DB 접근 |
+| jabis-producer | 3000 | jabis.jinhakapply.com/producer | 프로듀서 전용 앱 (API 관리, Maker) |
 | jabis-design-system | 3000 | jabis-design.jinhakapply.com | 디자인 시스템 문서 |
 
 ---
@@ -95,6 +97,7 @@
 | Night Builder | `/api/requests/*`, `/api/debug-tasks/*` | 기능 요청, 디버그 태스크 |
 | Dashboard | `/api/dashboard/*` | 대시보드 조회 |
 | Dev Tasks | `/api/dev-tasks/*` | 외부 개발 작업 요청 |
+| Endpoint Management | `/api/endpoints/*` | 엔드포인트 CRUD 관리 (API 빌더) |
 | Dynamic Endpoints | `/api/*` | DB 등록 SQL 쿼리 실행 |
 
 ---
