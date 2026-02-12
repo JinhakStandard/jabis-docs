@@ -111,7 +111,49 @@ http://{서비스명}-prod-service.{네임스페이스}:{포트}
 
 ---
 
-## 7. 개발 서버 실행 규칙
+## 7. 미리보기 빌드 (Preview Build)
+
+jabis-maker(포트 3200)가 각 프로젝트의 `dist/`를 `/preview/{프로젝트명}/` 경로로 서빙한다.
+
+### build vs build:preview
+
+| 스크립트 | vite mode | base path | 용도 |
+|---------|-----------|-----------|------|
+| `pnpm build` | production | `/` 또는 `./` | 운영 배포 (K3S) |
+| `pnpm build:preview` | preview | `/preview/{프로젝트명}/` | 미리보기 (jabis-maker) |
+
+**운영 빌드(`pnpm build`)로 미리보기를 띄우면 base path 불일치로 흰 화면이 발생한다.**
+
+### 프로젝트별 미리보기 빌드 명령
+
+| 프로젝트 | 미리보기 빌드 | preview base path |
+|---------|-------------|-------------------|
+| jabis | `pnpm build:preview` | `/preview/jabis/` |
+| jabis-design-system | `pnpm build:preview` | `/preview/jabis-design-system/` |
+| jabis-dev | `pnpm build:preview` | `/preview/jabis-dev/` |
+| jabis-producer | `pnpm build:preview` | `/preview/jabis-producer/` |
+| jabis-maker-admin | `pnpm build:preview` | `/preview/jabis-maker-admin/` |
+
+### 구현 방식
+
+각 프로젝트의 `vite.config.js`에서 mode에 따라 base를 분기:
+```js
+base: mode === 'preview' ? '/preview/{프로젝트명}/' : '/',
+```
+
+앱 `package.json`에 `build:preview` 스크립트 등록:
+```json
+"build:preview": "vite build --mode preview"
+```
+
+루트 `package.json`에서 앱으로 위임:
+```json
+"build:preview": "pnpm --filter {앱이름} build:preview"
+```
+
+---
+
+## 8. 개발 서버 실행 규칙
 
 - 실행 전 해당 포트를 사용 중인 프로세스 kill 후 실행
 - 예시: `lsof -t -i :3000 | xargs kill -9 2>/dev/null; npm run dev`
