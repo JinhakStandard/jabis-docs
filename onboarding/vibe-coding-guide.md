@@ -619,15 +619,43 @@ const userName = user?.profile?.name ?? '알 수 없음'
 
 ---
 
-## 11. 참조 문서
+## 11. AI 표준 적용 확인
+
+JABIS 프로젝트에서 바이브 코딩을 시작하기 전에 **JINHAK AI 개발 표준**이 적용되어 있는지 확인하세요.
+
+### 확인 방법
+- 프로젝트 루트에 `CLAUDE.md`가 있는지 확인
+- `CLAUDE.md` 하단에 `jinhak_standard_version` 메타정보가 있는지 확인
+- `.claude/settings.json`에 deny 규칙이 설정되어 있는지 확인
+
+### 미적용 시
+```
+/apply-standard
+```
+또는 [AI 표준 세팅 가이드](ai-standard-setup.md)의 빠른 적용 프롬프트를 사용하세요.
+
+### 적용 후 사용 가능한 명령어
+```
+/session-start          # 세션 시작 (이전 작업 확인 + 표준 버전 체크)
+/commit                 # 표준에 맞는 커밋 생성
+/review-pr 123          # PR을 표준 기준으로 리뷰
+/test                   # 테스트 실행 및 결과 분석
+```
+
+---
+
+## 12. 참조 문서
 
 | 문서 | 경로 | 설명 |
 |------|------|------|
+| AI 협업 정책 | `policies/ai-collaboration.md` | Claude Code 설정, hooks, skills 상세 |
+| AI 표준 세팅 가이드 | `onboarding/ai-standard-setup.md` | 프로젝트에 표준 적용하는 방법 |
 | 개발 규칙 | `CLAUDE.md` | 전체 코딩 컨벤션 |
 | 디자인 시스템 | `claude.design.md` | UI/UX 디자인 가이드 |
 | 아키텍처 | `.ai/ARCHITECTURE.md` | 시스템 구조 문서 |
 | 의사결정 기록 | `.ai/DECISIONS.md` | 기술 결정 사항 |
 | 세션 로그 | `.ai/SESSION_LOG.md` | 작업 기록 |
+| 전사 AI 표준 저장소 | https://github.com/JinhakStandard/ai-vibecoding | JINHAK AI 개발 표준 원본 |
 
 ---
 

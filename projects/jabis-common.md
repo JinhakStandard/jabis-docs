@@ -32,7 +32,7 @@ jabis-common/
 ├── menu/               # @jabis/menu (공통 메뉴, 역할 데이터, 빌더)
 │   └── src/
 │       ├── commonGroups.js   # createCommonGroups() — 5개 공통 메뉴 그룹
-│       ├── roles.js          # ROLES, roleLabels, defaultUserNames
+│       ├── roles.js          # ROLES(17개), roleLabels, defaultUserNames
 │       ├── buildMenu.js      # buildMenu(), staticMenu() 유틸리티
 │       └── index.js
 ├── package.json

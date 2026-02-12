@@ -39,15 +39,31 @@ Co-Authored-By: Claude <noreply@anthropic.com>
 
 ## 3. 규칙
 
+### 커밋 생성 절차 (AI 협업 시)
+
+Claude Code에서 `/commit` 스킬을 사용하면 아래 절차가 자동 수행됩니다:
+
+1. `git status`로 변경/추가/삭제된 파일 확인
+2. `git diff`로 변경 내용 상세 분석
+3. `git log --oneline -5`로 최근 커밋 스타일 확인
+4. 관련 파일만 개별 스테이징 (`git add -A` 지양)
+5. HEREDOC 형식으로 커밋 메시지 작성
+6. `git status`로 커밋 성공 확인
+7. `.ai/CURRENT_SPRINT.md` 및 `.ai/SESSION_LOG.md` 업데이트
+
 ### 필수
 - 커밋 전 반드시 `git diff`로 변경 내용 확인
 - 민감 정보(`.env`, credentials) 커밋 금지
 - Teams 배포 알림 webhook step 포함 (`bitbucket-pipelines.yml`)
+- pre-commit hook 실패 시 **새 커밋** 생성 (`--amend` 금지)
 
 ### 금지
 - `git push --force` 금지 (특히 main/master)
 - `git reset --hard` 금지 (확인 없이)
 - `--no-verify` 옵션 금지
+- `git config` 직접 수정 금지
+
+> 위 금지 명령은 `.claude/settings.json`의 `deny` 규칙으로 **물리적 차단**됩니다. 개인 설정으로 우회 불가합니다.
 
 ---
 
