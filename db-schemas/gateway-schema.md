@@ -72,7 +72,7 @@ API 접근 로그.
 
 ## gateway.api_tasks
 
-사용자/역할 단위 API 요청 관리.
+프로젝트 단위 API 요청 관리.
 
 | 컬럼 | 타입 | 설명 |
 |------|------|------|
@@ -82,7 +82,7 @@ API 접근 로그.
 | `spec` | TEXT NOT NULL | 요청 명세 |
 | `spec_format` | VARCHAR(20) | `markdown`/`text`/`json` |
 | `requested_by` | VARCHAR(200) | 요청자 email (JWT 자동 추출) |
-| `requested_role` | VARCHAR(50) NOT NULL | 요청 역할 |
+| `project` | VARCHAR(50) NOT NULL | 대상 프로젝트명 (예: `jabis-producer`) |
 | `status` | VARCHAR(20) NOT NULL | `pending`/`in_progress`/`completed`/`verified`/`rejected` |
 | `priority` | INTEGER NOT NULL | 우선순위 (0: 보통, 5: 높음, 10: 긴급) |
 | `assignee` | VARCHAR(100) | 구현 담당자 |
@@ -94,6 +94,6 @@ API 접근 로그.
 | `completed_at` | TIMESTAMPTZ | 완료일 |
 
 **인덱스:**
-- `idx_api_tasks_role` — `requested_role`
+- `idx_api_tasks_project` — `project`
 - `idx_api_tasks_status` — `status`
 - `idx_api_tasks_requested_by` — `requested_by`

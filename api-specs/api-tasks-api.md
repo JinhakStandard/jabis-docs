@@ -1,6 +1,6 @@
 # API Tasks API 명세
 
-> 사용자/역할 단위 API 요청 관리 시스템.
+> 프로젝트 단위 API 요청 관리 시스템.
 > jabis-producer의 API 요청 페이지에서 사용합니다.
 > `nbuilder.dev_tasks`(nightbuilder용)와 별개로 `gateway.api_tasks` 테이블을 사용합니다.
 
@@ -43,6 +43,7 @@ POST /api/api-tasks
   "description": "부서 코드로 해당 부서 사용자 목록 조회",
   "spec": "## 요구사항\n- 부서 코드(dept_code) 파라미터\n- 이름 검색\n- 페이지네이션",
   "specFormat": "markdown",
+  "project": "jabis-producer",
   "priority": 5,
   "endpoints": [
     { "method": "GET", "path": "/api/users/by-dept", "description": "부서별 사용자 조회" }
@@ -53,7 +54,7 @@ POST /api/api-tasks
 
 **필수 필드**: `title`, `spec`
 
-`requested_by`와 `requested_role`은 JWT에서 자동 추출됩니다.
+`requested_by`는 JWT에서 자동 추출됩니다. `project`는 프론트엔드에서 선택하며, 생략 시 기본값 `jabis-producer`.
 
 **Response: `201 Created`**
 ```json
@@ -63,7 +64,7 @@ POST /api/api-tasks
     "id": "atask-20260213-a1b2",
     "title": "부서별 사용자 조회 API",
     "requestedBy": "user@jinhakapply.com",
-    "requestedRole": "producer",
+    "project": "jabis-producer",
     "status": "pending",
     ...
   }
@@ -83,7 +84,7 @@ GET /api/api-tasks
 | 파라미터 | 타입 | 필수 | 설명 |
 |----------|------|------|------|
 | `status` | string | N | 상태 필터 (`pending`/`in_progress`/`completed`/`verified`/`rejected`) |
-| `requestedRole` | string | N | 역할 필터 (`producer`/`developer`/`admin`) |
+| `project` | string | N | 프로젝트 필터 (예: `jabis-producer`, `jabis`, `jabis-api-gateway`) |
 | `requestedBy` | string | N | 요청자 필터 (admin/superadmin만 사용 가능) |
 | `sort` | string | N | 정렬 기준 (`priority`/`createdAt`/`updatedAt`, 기본값: `priority`) |
 | `order` | string | N | 정렬 방향 (`asc`/`desc`, 기본값: `desc`) |
@@ -171,7 +172,7 @@ POST /api/api-tasks/{taskId}/delete
 | `spec` | string | 요청 명세 |
 | `specFormat` | string | `markdown`/`text`/`json` |
 | `requestedBy` | string | 요청자 email (JWT 자동 추출) |
-| `requestedRole` | string | 요청 역할 (`producer`/`developer`/`admin`) |
+| `project` | string | 대상 프로젝트명 (예: `jabis-producer`, `jabis`, `jabis-api-gateway`) |
 | `status` | string | `pending`/`in_progress`/`completed`/`verified`/`rejected` |
 | `priority` | number | 우선순위 (0: 보통, 5: 높음, 10: 긴급) |
 | `assignee` | string | 구현 담당자 |
@@ -204,5 +205,5 @@ POST /api/api-tasks/{taskId}/delete
 |------|---------------------|---------------------|
 | 스키마 | nbuilder (nightbuilder용) | gateway (API 관리용) |
 | 인증 | X-Dev-Tasks-Key (API 키) | JWT Bearer (사용자 인증) |
-| 추적 단위 | 프로젝트 (`source_project`) | 사용자/역할 (`requested_by`, `requested_role`) |
+| 추적 단위 | 프로젝트 (`source_project`) | 프로젝트 (`project`) + 요청자 (`requested_by`) |
 | 용도 | 기계 간 요청 (nightbuilder, 자동화) | 사용자 UI 요청 (jabis-producer) |
