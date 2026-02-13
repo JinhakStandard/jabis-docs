@@ -130,13 +130,13 @@ $$ LANGUAGE plpgsql;
 |----|-----------|---------|--------|----------|--------|---------|
 | api-gateway-client-001 | jabis_5ad89312e42883fa | JABIS API Gateway | (내부) | (없음) | introspect | `register-api-gateway-client.sql` |
 | jabis-client-001 | jabis_d93fb708be5b5eb7 | JABIS 메인 프론트엔드 | jabis.jinhakapply.com | /auth/callback | openid, profile, email | `register-jabis-client.sql` |
+| jabis-producer-client-001 | jabis_producer_a7c3e91f4d2b8e06 | JABIS 프로듀서 | jabis.jinhakapply.com | /producer/auth/callback | openid, profile, email | `register-jabis-producer-client.sql` |
 
 ### 미등록 클라이언트 (등록 예정)
 
 | 프로젝트 | 도메인 | 콜백 경로 | 비고 |
 |---------|--------|----------|------|
 | jabis-dev | jabis.jinhakapply.com | /dev/auth/callback | .env.production에 client_id 비어있음 |
-| jabis-producer | jabis.jinhakapply.com | /producer/auth/callback | .env.production에 client_id 비어있음 |
 
 ## 3. SQL 파일 위치
 
@@ -146,3 +146,4 @@ $$ LANGUAGE plpgsql;
 | `sql/drop.sql` | 스키마 삭제 |
 | `sql/register-api-gateway-client.sql` | API Gateway 클라이언트 등록 |
 | `sql/register-jabis-client.sql` | jabis 메인 프론트엔드 클라이언트 등록 |
+| `sql/register-jabis-producer-client.sql` | jabis-producer 프로듀서 앱 클라이언트 등록 |
