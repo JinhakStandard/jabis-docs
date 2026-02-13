@@ -133,6 +133,7 @@ jabis-maker(포트 3200)가 각 프로젝트의 `dist/`를 `/preview/{프로젝�
 | jabis-dev | `pnpm build:preview` | `/preview/jabis-dev/` |
 | jabis-producer | `pnpm build:preview` | `/preview/jabis-producer/` |
 | jabis-maker-admin | `pnpm build:preview` | `/preview/jabis-maker-admin/` |
+| jabis-hr | `pnpm build:preview` | `/preview/jabis-hr/` |
 
 ### 구현 방식
 

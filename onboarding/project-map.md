@@ -1,6 +1,6 @@
 # JABIS 프로젝트 맵
 
-> JABIS 에코시스템의 13개 프로젝트와 역할을 정리합니다.
+> JABIS 에코시스템의 14개 프로젝트와 역할을 정리합니다.
 
 ---
 
@@ -21,6 +21,7 @@
 | 11 | jabis-design-system | jinhaksa/jabis-design-system | 디자인 시스템 문서 | Vite, React |
 | 12 | jabis-design-package | jinhaksa/jabis-design-package | 디자인 토큰 추출 | Node.js |
 | 13 | jabis-helm | jinhaksa/jabis-helm | Helm 배포 관리 | Helm, YAML |
+| 14 | jabis-hr | jinhaksa/jabis-hr | 인사관리 전용 앱 | Vite, React, Zustand |
 
 ---
 
@@ -32,6 +33,7 @@ jabis-common (공유 라이브러리)
   ├── jabis-template (템플릿)
   ├── jabis-lab (실험)
   ├── jabis-dev (개발부서)
+  ├── jabis-hr (인사관리)
   └── jabis-design-system (디자인 문서)
 
 jabis-cert (인증)
@@ -67,3 +69,4 @@ git clone https://navskh@bitbucket.org/jinhaksa/{프로젝트명}.git
 | 긴급 콘솔 | https://jabis-emergency.jinhakapply.com |
 | 디자인 시스템 | https://jabis-design.jinhakapply.com |
 | Bitbucket 동기화 | https://jabis-bitbucket-sync.jinhakapply.com |
+| 인사관리 | https://jabis.jinhakapply.com/hr |

@@ -55,7 +55,8 @@ jabis-docs/
 │   ├── jabis-common.md        # 공유 UI 라이브러리
 │   ├── jabis-design-system.md # 디자인 시스템 문서
 │   ├── jabis-design-package.md # 디자인 토큰 추출
-│   └── jabis-helm.md          # Helm 배포 관리
+│   ├── jabis-helm.md          # Helm 배포 관리
+│   └── jabis-hr.md            # 인사관리 전용 앱
 │
 └── templates/                 # 프로젝트 템플릿
     └── (예정)

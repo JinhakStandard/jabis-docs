@@ -15,6 +15,7 @@
 │  jabis-dev      - 개발부서 전용                               │
 │  jabis-design-system - 디자인 시스템 문서                     │
 │  jabis-producer - 프로듀서 전용 (API 관리, Maker)             │
+│  jabis-hr      - 인사관리 전용 (채용, 인사, 급여, 교육)      │
 └──────────┬──────────────────────────────────┬────────────────┘
            │ OAuth (PKCE)                     │ REST API
            ▼                                  ▼
@@ -64,6 +65,7 @@
 | jabis-emergency-console | 3005 | jabis-emergency.jinhakapply.com | 긴급 DB 접근 |
 | jabis-producer | 3000 | jabis.jinhakapply.com/producer | 프로듀서 전용 앱 (API 관리, Maker) |
 | jabis-design-system | 3000 | jabis-design.jinhakapply.com | 디자인 시스템 문서 |
+| jabis-hr | 3000 | jabis.jinhakapply.com/hr | 인사관리 전용 앱 |
 
 ---
 
