@@ -32,16 +32,16 @@ GET /api/access-logs
 
 **Query Parameters:**
 
-| 파라미터 | 타입 | 필수 | 설명 |
-|----------|------|------|------|
-| `method` | string | N | HTTP 메서드 필터 (`GET` / `POST`) |
-| `path` | string | N | 경로 부분 일치 검색 (ILIKE) |
-| `startDate` | string (ISO 8601) | N | 조회 시작일시 |
-| `endDate` | string (ISO 8601) | N | 조회 종료일시 |
-| `sort` | string | N | 정렬 기준 (`requested_at` / `response_time_ms` / `response_status`, 기본값: `requested_at`) |
-| `order` | string | N | 정렬 방향 (`asc` / `desc`, 기본값: `desc`) |
-| `limit` | number | N | 조회 개수 (기본값: 100, 최대: 500) |
-| `offset` | number | N | 건너뛸 개수 (기본값: 0) |
+| 파라미터 | 타입 | 필수 | 기본값 | 설명 |
+|----------|------|------|--------|------|
+| `page` | number | N | `1` | 페이지 번호 (1부터) |
+| `pageSize` | number | N | `50` | 페이지 크기 (1~500) |
+| `method` | string | N | — | HTTP 메서드 필터 (`GET` / `POST`) |
+| `path` | string | N | — | 경로 부분 일치 검색 (ILIKE) |
+| `startDate` | string (ISO 8601) | N | — | 조회 시작일시 |
+| `endDate` | string (ISO 8601) | N | — | 조회 종료일시 |
+| `sort` | string | N | `requested_at` | 정렬 기준 (`requested_at` / `response_time_ms` / `response_status`) |
+| `order` | string | N | `desc` | 정렬 방향 (`asc` / `desc`) |
 
 **Response: `200 OK`**
 ```json
@@ -50,20 +50,24 @@ GET /api/access-logs
   "data": {
     "items": [
       {
-        "request_id": "uuid-1234",
-        "client_id": "user-001",
-        "endpoint_id": "ep-001",
+        "id": 1,
+        "requestId": "uuid-1234",
+        "clientId": "user-001",
+        "endpointId": "ep-001",
         "method": "GET",
         "path": "/api/users",
-        "query_params": { "status": "active" },
-        "response_status": 200,
-        "response_time_ms": 45,
-        "permission_status": "allowed",
-        "client_ip": "192.168.1.100",
-        "user_agent": "Mozilla/5.0 ...",
-        "requested_at": "2026-02-11T09:00:12Z"
+        "queryParams": { "status": "active" },
+        "responseStatus": 200,
+        "responseTimeMs": 45,
+        "permissionStatus": "allowed",
+        "clientIp": "192.168.1.100",
+        "userAgent": "Mozilla/5.0 ...",
+        "requestedAt": "2026-02-11T09:00:12.000Z"
       }
-    ]
+    ],
+    "total": 150,
+    "page": 1,
+    "pageSize": 50
   }
 }
 ```
@@ -91,20 +95,23 @@ GET /api/access-logs/{requestId}
 
 ## 데이터 모델: ApiAccessLog
 
-| 필드 | 타입 | 설명 |
-|------|------|------|
-| `request_id` | string (UUID) | 요청 고유 ID |
-| `client_id` | string | 요청자 ID (JWT에서 추출) |
-| `endpoint_id` | string | 호출된 엔드포인트 ID |
-| `method` | string | HTTP 메서드 (`GET` / `POST`) |
-| `path` | string | 요청 경로 (쿼리스트링 제외) |
-| `query_params` | object | 쿼리 파라미터 (JSONB) |
-| `response_status` | number | HTTP 응답 상태 코드 |
-| `response_time_ms` | number | 응답 소요 시간 (ms) |
-| `permission_status` | string | 권한 상태 (`pending` / `allowed` / `blocked`) |
-| `client_ip` | string | 클라이언트 IP |
-| `user_agent` | string | User-Agent 헤더 |
-| `requested_at` | string (ISO 8601) | 요청 시각 |
+> API 응답은 camelCase, DB 컬럼은 snake_case. logRepository의 mapRow가 변환 담당.
+
+| 응답 필드 (camelCase) | DB 컬럼 (snake_case) | 타입 | 설명 |
+|----------------------|---------------------|------|------|
+| `id` | `id` | number | 자동 증가 PK |
+| `requestId` | `request_id` | string | 요청 고유 ID |
+| `clientId` | `client_id` | string | 요청자 ID (JWT에서 추출) |
+| `endpointId` | `endpoint_id` | string | 호출된 엔드포인트 ID |
+| `method` | `method` | string | HTTP 메서드 (`GET` / `POST`) |
+| `path` | `path` | string | 요청 경로 (쿼리스트링 제외) |
+| `queryParams` | `query_params` | object | 쿼리 파라미터 (JSONB) |
+| `responseStatus` | `response_status` | number | HTTP 응답 상태 코드 |
+| `responseTimeMs` | `response_time_ms` | number | 응답 소요 시간 (ms) |
+| `permissionStatus` | `permission_status` | string | 권한 상태 (`pending` / `allowed` / `blocked`) |
+| `clientIp` | `client_ip` | string | 클라이언트 IP |
+| `userAgent` | `user_agent` | string | User-Agent 헤더 |
+| `requestedAt` | `requested_at` | string (ISO 8601) | 요청 시각 |
 
 ---
 

@@ -31,22 +31,33 @@
 
 ## gateway.api_access_logs
 
-API 접근 로그.
+API 접근 로그. 동적 API 엔드포인트 호출 시 `logService.saveAccessLog()`에 의해 비동기 자동 기록.
 
 | 컬럼 | 타입 | 설명 |
 |------|------|------|
-| `request_id` | VARCHAR PK | 요청 고유 ID |
-| `client_id` | VARCHAR | 클라이언트 ID |
-| `endpoint_id` | VARCHAR | 엔드포인트 ID |
-| `method` | VARCHAR | HTTP 메서드 |
-| `path` | VARCHAR | 요청 경로 |
+| `id` | SERIAL PK | 자동 증가 ID |
+| `request_id` | VARCHAR(255) NOT NULL | 요청 고유 ID (Fastify requestId) |
+| `client_id` | VARCHAR(255) | 클라이언트 ID (JWT에서 추출) |
+| `endpoint_id` | VARCHAR(50) | 호출된 엔드포인트 ID |
+| `method` | VARCHAR(10) NOT NULL | HTTP 메서드 (GET/POST) |
+| `path` | TEXT NOT NULL | 요청 경로 (쿼리스트링 제외) |
 | `query_params` | JSONB | 쿼리 파라미터 |
-| `response_status` | INTEGER | 응답 상태 코드 |
-| `response_time_ms` | INTEGER | 응답 시간 (ms) |
-| `permission_status` | VARCHAR | 권한 상태 |
-| `client_ip` | VARCHAR | 클라이언트 IP |
-| `user_agent` | VARCHAR | User-Agent |
-| `requested_at` | TIMESTAMPTZ | 요청 시각 |
+| `response_status` | INTEGER NOT NULL | HTTP 응답 상태 코드 |
+| `response_time_ms` | INTEGER NOT NULL | 응답 소요 시간 (ms) |
+| `permission_status` | VARCHAR(20) | 권한 상태 (`pending`/`allowed`/`blocked`) |
+| `client_ip` | VARCHAR(45) | 클라이언트 IP |
+| `user_agent` | TEXT | User-Agent 헤더 |
+| `requested_at` | TIMESTAMPTZ NOT NULL | 요청 시각 (기본값: NOW()) |
+
+**인덱스:**
+- `idx_access_logs_request_id` — `request_id`
+- `idx_access_logs_client_id` — `client_id`
+- `idx_access_logs_endpoint_id` — `endpoint_id`
+- `idx_access_logs_requested_at` — `requested_at DESC`
+- `idx_access_logs_path` — `path`
+- `idx_access_logs_method` — `method`
+
+**DDL 파일:** `jabis-api-gateway/sql/gateway-schema.sql`
 
 ---
 
