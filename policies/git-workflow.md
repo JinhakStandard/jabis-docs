@@ -123,4 +123,18 @@ Pipeline의 Build Docker Image 단계에서 `jabis-common`을 clone할 때, **Bi
 > 모든 jabis 프로젝트(jabis, jabis-dev, jabis-producer, jabis-hr 등)에서 동일한 토큰을 직접 기입합니다.
 > 신규 프로젝트 생성 시 기존 프로젝트의 `bitbucket-pipelines.yml`에서 토큰 값을 복사하여 사용하세요.
 
+### jabis-helm Clone 토큰
+
+Pipeline의 Update Helm 단계에서 `jabis-helm`을 clone할 때도 동일하게 **토큰을 YAML에 직접 기입**하는 방식을 사용합니다.
+
+```yaml
+# Update Helm step 내부
+- git clone https://x-token-auth:{토큰}@bitbucket.org/jinhaksa/jabis-helm.git
+- git remote set-url origin https://x-token-auth:{토큰}@bitbucket.org/jinhaksa/jabis-helm.git
+```
+
+> **주의**: `${JABIS_HELM_TOKEN}` 같은 환경변수 참조 방식을 사용하지 않습니다.
+> jabis-common과 마찬가지로 모든 프로젝트에서 동일한 토큰을 직접 기입합니다.
+> `git clone`과 `git remote set-url origin` 두 곳 모두 토큰을 기입해야 합니다.
+
 > **App Password 폐지 예정**: Bitbucket이 2026-06-09에 기존 App Password를 비활성화합니다. 그 전에 API Token으로 교체가 필요합니다.
