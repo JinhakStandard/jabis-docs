@@ -138,3 +138,17 @@ Pipeline의 Update Helm 단계에서 `jabis-helm`을 clone할 때도 동일하�
 > `git clone`과 `git remote set-url origin` 두 곳 모두 토큰을 기입해야 합니다.
 
 > **App Password 폐지 예정**: Bitbucket이 2026-06-09에 기존 App Password를 비활성화합니다. 그 전에 API Token으로 교체가 필요합니다.
+
+### Teams Webhook URL (배포 알림)
+
+Pipeline의 Notify Teams 단계에서 Microsoft Teams로 배포 완료 알림을 보낼 때, **Webhook URL을 YAML에 직접 기입**하는 방식을 사용합니다.
+
+```yaml
+# Notify Teams step 내부
+curl -H "Content-Type: application/json" -d '{...}' "{Webhook URL}"
+```
+
+> **주의**: `$TEAMS_WEBHOOK_URL` 같은 환경변수 참조 방식을 사용하지 않습니다.
+> 모든 jabis 프로젝트에서 동일한 Webhook URL을 직접 기입합니다.
+> 신규 프로젝트 생성 시 기존 프로젝트의 `bitbucket-pipelines.yml`에서 URL을 복사하여 사용하세요.
+> Webhook URL이 변경될 경우, 전체 프로젝트의 `bitbucket-pipelines.yml`을 일괄 수정해야 합니다.
