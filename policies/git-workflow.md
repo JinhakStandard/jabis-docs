@@ -107,3 +107,20 @@ pipelines:
 3. **Build Docker Image** — jabis-common clone + Docker build + Harbor push
 4. **Update Helm** — jabis-helm clone + values 업데이트 + Helm package + push
 5. **Notify Teams** — 배포 완료 알림 (Adaptive Card)
+
+### jabis-common Clone 토큰
+
+Pipeline의 Build Docker Image 단계에서 `jabis-common`을 clone할 때, **Bitbucket Repository Access Token을 YAML에 직접 기입**하는 방식을 사용합니다.
+
+```yaml
+# Build Docker Image step 내부
+- rm -rf packages
+- apk add --no-cache git
+- git clone https://x-token-auth:{토큰}@bitbucket.org/jinhaksa/jabis-common.git packages
+```
+
+> **주의**: `${JABIS_COMMON_TOKEN}` 같은 환경변수 참조 방식을 사용하지 않습니다.
+> 모든 jabis 프로젝트(jabis, jabis-dev, jabis-producer, jabis-hr 등)에서 동일한 토큰을 직접 기입합니다.
+> 신규 프로젝트 생성 시 기존 프로젝트의 `bitbucket-pipelines.yml`에서 토큰 값을 복사하여 사용하세요.
+
+> **App Password 폐지 예정**: Bitbucket이 2026-06-09에 기존 App Password를 비활성화합니다. 그 전에 API Token으로 교체가 필요합니다.
