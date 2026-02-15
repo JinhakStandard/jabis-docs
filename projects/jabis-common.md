@@ -1,6 +1,6 @@
 # jabis-common
 
-> 공유 UI 라이브러리 (@jabis/ui, @jabis/layout, @jabis/auth, @jabis/core, @jabis/menu)
+> 공유 UI 라이브러리 (@jabis/ui, @jabis/layout, @jabis/auth, @jabis/core, @jabis/menu, @jabis/shared-pages)
 
 ---
 
@@ -35,6 +35,12 @@ jabis-common/
 │       ├── roles.js          # ROLES(17개), roleLabels, defaultUserNames
 │       ├── buildMenu.js      # buildMenu(), staticMenu() 유틸리티
 │       └── index.js
+├── shared-pages/       # @jabis/shared-pages (공통 페이지 컴포넌트)
+│   └── src/
+│       ├── index.js          # 공통 페이지 re-export
+│       ├── pages/            # 공통 페이지 컴포넌트
+│       ├── components/       # 공유 컴포넌트
+│       └── data/             # 공유 Mock 데이터
 ├── package.json
 └── pnpm-workspace.yaml
 ```
@@ -111,6 +117,7 @@ Header 컴포넌트에서 역할 배지 클릭 시 역할 전환 드롭다운을
 - pnpm 필수 (npm 사용 금지)
 - 모든 UI 컴포넌트는 @jabis/ui로 export
 - 메뉴 공통 그룹/역할 데이터는 @jabis/menu로 export
+- 공통 페이지 컴포넌트는 @jabis/shared-pages로 export
 - tailwind.preset.js로 디자인 토큰 통일
 - Git submodule로 jabis, jabis-template, jabis-design-system에서 참조
 - 부서 리포에서 수정 금지 — import만 허용
