@@ -248,3 +248,55 @@ import { TodoPage, DocumentPage, ApprovalPage } from '@jabis/shared-pages'
 - tailwind.preset.js로 디자인 토큰 통일
 - Git submodule로 jabis, jabis-template, jabis-design-system에서 참조
 - 부서 리포에서 수정 금지 — import만 허용
+
+## shared-pages 수정 정책
+
+**shared-pages 수정은 반드시 jabis-common에서 수행한다.**
+
+- `@jabis/shared-pages`의 원본(source of truth)은 `jabis-common/shared-pages/`이다
+- jabis-hr, jabis 등 소비 프로젝트에도 `packages/shared-pages/`가 존재하지만, 이는 jabis-common을 **git submodule**로 참조하는 것이다
+- 소비 프로젝트에서 직접 수정하면 다음 submodule 동기화 시 충돌/유실 위험이 있으므로 **수정 금지**
+
+### shared-pages 수정 → 소비 프로젝트 반영 플로우
+
+```
+1. jabis-common에서 수정
+   └─ cd jabis-common && git pull → 수정 → 커밋 → push
+
+2. 소비 프로젝트에서 submodule 업데이트
+   └─ cd jabis-hr && git submodule update --remote packages
+   └─ git add packages && git commit → push
+
+3. 소비 프로젝트에서 빌드/미리보기로 검증
+   └─ pnpm build:preview
+```
+
+### submodule 구조
+
+소비 프로젝트의 `packages/` 디렉토리 전체가 jabis-common을 submodule로 참조한다.
+
+| 소비 프로젝트 | submodule path | submodule url |
+|-------------|---------------|---------------|
+| jabis | `packages/` | `jabis-common.git` |
+| jabis-hr | `packages/` | `jabis-common.git` |
+| jabis-producer | `packages/` | `jabis-common.git` |
+| jabis-dev | `packages/` | `jabis-common.git` |
+
+### Tailwind content 설정 필수
+
+소비 프로젝트의 `tailwind.config.js`에 shared-pages 경로가 포함되어야 Tailwind 클래스가 CSS에 포함된다.
+
+```js
+// apps/{app}/tailwind.config.js
+content: [
+  './index.html',
+  './src/**/*.{js,jsx}',
+  '../../packages/ui/src/**/*.{js,jsx}',
+  '../../packages/layout/src/**/*.{js,jsx}',
+  '../../packages/auth/src/**/*.{js,jsx}',
+  '../../packages/core/src/**/*.{js,jsx}',
+  '../../packages/shared-pages/src/**/*.{js,jsx}',  // ← 필수
+]
+```
+
+빠뜨리면 shared-pages 내 Tailwind 클래스가 purge되어 스타일이 깨진다.
