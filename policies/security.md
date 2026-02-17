@@ -64,6 +64,33 @@ Dockerfile ENV (비민감) ──────►   ENV 변수로 설정
 → jabis-cert callback → 클라이언트/auth/callback → userinfo (쿠키 인증)
 ```
 
+### 미리보기용 Dev Token 인증 bypass
+
+미리보기(ngrok) 환경에서는 OAuth 로그인이 불가하므로(cross-domain 쿠키 제한), API 게이트웨이에 **Dev Token 기반 인증 bypass**를 사용한다.
+
+**동작 원리:**
+1. API 게이트웨이에 `DEV_ACCESS_TOKEN` 환경변수 설정 (Dockerfile `ENV`)
+2. 프론트엔드 미리보기 빌드 시 `VITE_DEV_TOKEN` 환경변수로 동일한 토큰 설정 (`.env.preview`)
+3. 프론트엔드가 API 요청 시 `X-Dev-Token` 헤더에 토큰을 포함
+4. 게이트웨이의 `getUserId()`에서 토큰 일치 시 `dev-user`로 인증 처리
+
+**적용 범위:**
+- `approval` 라우트 (전자결재)
+- `organization` 라우트 (조직/부서)
+
+**보안 고려사항:**
+- 운영 환경에서도 토큰이 설정되어 있으므로, 토큰이 유출되면 인증 없이 API 접근 가능
+- 토큰은 `.env.preview`에만 설정하고 `.env.production`에는 설정하지 않음 (운영 빌드에 토큰 미포함)
+- JABIS는 사내 시스템이며 게이트웨이 도메인은 외부 비공개이므로 리스크는 제한적
+
+```
+# 미리보기 API 호출 흐름
+미리보기 브라우저 (ngrok)
+  → fetch('https://jabis-gateway.jinhakapply.com/api/approval/forms',
+      { headers: { 'X-Dev-Token': '...' } })
+  → 게이트웨이: 토큰 검증 → dev-user로 처리 → 정상 응답
+```
+
 ---
 
 ## 3. DB 보안
