@@ -114,9 +114,12 @@ jabis-common을 각 프론트엔드 프로젝트에서 참조합니다.
 | @jabis/layout | DashboardLayout, Header, Sidebar |
 | @jabis/auth | LoginPage, CallbackPage, useAuthStore |
 | @jabis/core | ThemeProvider, ThemeToggle, sites |
+| @jabis/menu | 공통 메뉴 그룹 (buildMenu, createCommonGroups) |
+| @jabis/shared-pages | 공통 페이지 컴포넌트 (OrganizationPage 등) |
 
 - 부서 리포는 공통 패키지 수정 금지 — `@jabis/*` import만 허용
-- 메뉴는 각 부서 리포에서 정적 JSON으로 관리
+- **공통 메뉴는 `@jabis/menu`의 `buildMenu({ standalone: true })`로 중앙 관리**, 부서 전용 메뉴만 각 리포에서 정의
+- 공통 메뉴 그룹 5개: work(업무 관리), communication(소통), life(사내 생활), organization(조직/관리), etc(기타)
 
 ---
 

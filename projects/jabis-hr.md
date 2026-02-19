@@ -110,6 +110,8 @@ jabis-hr 독립 앱은 향후 추가 기능 개발 시 jabis 메인으로 순차
 - jabis-{dept} 부서별 앱 패턴 준수
 - UI 컴포넌트는 @jabis/ui import, packages/ 수정 금지
 - POST + action 패턴으로 CRUD 처리
+- **공통 메뉴는 `@jabis/menu`의 `buildMenu('hr', ..., { standalone: true })`로 관리** (하드코딩 금지)
+- HR 전용 메뉴(채용/인사/급여/교육/전자결재 관리)만 App.jsx에서 직접 정의
 - basename: `/hr`
 - 미리보기 base path: `/preview/jabis-hr/`
 - 운영 base path: `/hr/`

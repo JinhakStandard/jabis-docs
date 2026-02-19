@@ -97,14 +97,20 @@ pnpm preview              # 빌드 결과 미리보기
 - 필터: 메서드, 경로
 - Gateway `/api/access-logs` 연동 (미연동 시 데모 데이터 fallback)
 
-### 사이드바 구조
+### 사이드바 구조 (`@jabis/menu` buildMenu 사용)
 - 대시보드
 - JABIS Maker (iframe)
-- API 관리 (그룹)
+- API 관리 (그룹) — producer 전용
   - API 요청하기
   - API 빌더
   - API 로그
-- 공통 메뉴 (업무관리, 소통, 사내생활, 조직/관리, 기타)
+- `common.work` — 공통 메뉴 (@jabis/menu)
+- `common.communication` — 공통 메뉴
+- `common.life` — 공통 메뉴
+- `common.organization` — 공통 메뉴
+- `common.etc` — 공통 메뉴
+
+**공통 메뉴는 `buildMenu('producer', ..., { standalone: true })`로 관리** (하드코딩 금지)
 
 ## Gateway 연동
 - Vite 프록시: `/gateway-api` → `VITE_API_GATEWAY_URL`

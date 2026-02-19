@@ -154,13 +154,15 @@ N/A
 
 ## @jabis/menu 사용법
 
+### jabis 메인 (basename 없음) — 경로에 role prefix 포함
+
 ```js
 import { buildMenu, staticMenu, roleLabels, defaultUserNames } from '@jabis/menu'
 
 // 공통 그룹 + 역할 전용 메뉴 조합
 export const myMenu = buildMenu('hr', (common, { extend }) => [
   { icon: 'LayoutDashboard', label: '대시보드', path: '/hr' },
-  common.work,                    // 공통 그룹 그대로 사용
+  common.work,                    // 공통 그룹 그대로 사용 → /hr/todos 등
   extend(common.work, [           // 공통 그룹에 아이템 추가 (뒤에)
     { icon: 'FolderKanban', label: '프로젝트', path: '/hr/projects' },
   ]),
@@ -178,6 +180,38 @@ export const portalMenu = staticMenu([
   { icon: 'LayoutDashboard', label: '홈', path: '/portal' },
 ])
 ```
+
+### dept 프로젝트 (basename으로 role prefix 처리) — standalone 모드
+
+dept 프로젝트(jabis-hr, jabis-dev, jabis-producer 등)는 BrowserRouter basename이 이미 role prefix를 처리하므로,
+`{ standalone: true }` 옵션을 사용하여 경로에서 role prefix를 생략한다.
+
+```js
+import { buildMenu } from '@jabis/menu'
+
+// standalone: true → 경로가 /todos (prefix 없음), basename="/hr"에서 /hr/todos로 해석됨
+const getMenuItems = buildMenu('hr', (common) => [
+  { icon: 'LayoutDashboard', label: '대시보드', path: '/dashboard' },
+  // ... HR 전용 그룹들 ...
+  common.work,           // → /todos, /documents, /goals, /schedule, /approval
+  common.communication,  // → /messenger, /mail, /meeting-room
+  common.life,           // → /treasure-blog, /breakfast, /news, /restaurant, /memory
+  common.organization,   // → /organization
+  common.etc,            // → /voucher, /sites
+], { standalone: true })
+```
+
+**중요**: dept 프로젝트는 반드시 `{ standalone: true }`를 사용해야 한다. 빼먹으면 `/hr/todos` 경로가 생성되어 basename `/hr`과 합쳐져 `/hr/hr/todos`가 된다.
+
+### 공통 메뉴 그룹 5개 (commonGroups.js)
+
+| 그룹 | 라벨 | 아이콘 | 포함 항목 |
+|------|------|--------|----------|
+| `common.work` | 업무 관리 | Briefcase | 할일, 문서작성, 목표관리, 일정, 전자결재 |
+| `common.communication` | 소통 | MessageCircle | 메신저, 메일, 회의실 예약 |
+| `common.life` | 사내 생활 | Coffee | 트래져 블로그, 조식, 뉴스, 맛집, 추억 |
+| `common.organization` | 조직/관리 | Building2 | 조직 관리 |
+| `common.etc` | 기타 | Link | 회계 전표, 사내 사이트 |
 
 ## @jabis/layout 역할 전환 기능
 

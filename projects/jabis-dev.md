@@ -62,3 +62,5 @@ pnpm preview              # 빌드 결과 미리보기
 - jabis-template을 복제하여 생성된 부서별 앱(jabis-{dept})의 첫 번째 사례
 - UI 컴포넌트는 반드시 packages/ui/에 위치 → @jabis/ui import
 - @jabis/ui 변경 후 개발 서버 재시작 필요
+- **공통 메뉴는 `@jabis/menu`의 `buildMenu('developer', ..., { standalone: true })`로 관리** (하드코딩 금지)
+- 개발 도구 메뉴만 App.jsx에서 직접 정의, 공통 그룹(업무/소통/사내생활/조직/기타)은 `common.*` 사용
