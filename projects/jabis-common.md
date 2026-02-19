@@ -32,7 +32,7 @@ jabis-common/
 ├── menu/               # @jabis/menu (공통 메뉴, 역할 데이터, 빌더)
 │   └── src/
 │       ├── commonGroups.js   # createCommonGroups() — 5개 공통 메뉴 그룹
-│       ├── roles.js          # ROLES(17개), roleLabels, defaultUserNames
+│       ├── roles.js          # ROLES(17개), roleLabels, defaultUserNames, availableRoles, getRoleUrl
 │       ├── buildMenu.js      # buildMenu(), staticMenu() 유틸리티
 │       └── index.js
 ├── shared-pages/       # @jabis/shared-pages (공통 페이지 컴포넌트)
@@ -213,26 +213,51 @@ const getMenuItems = buildMenu('hr', (common) => [
 | `common.organization` | 조직/관리 | Building2 | 조직 관리 |
 | `common.etc` | 기타 | Link | 회계 전표, 사내 사이트 |
 
+## @jabis/menu 역할 데이터 (roles.js)
+
+`@jabis/menu`는 역할 목록과 URL 매핑도 중앙 관리한다. **하드코딩 금지.**
+
+```js
+import { availableRoles, getRoleUrl } from '@jabis/menu'
+
+// availableRoles = [{ id: 'portal', label: 'AI 포탈' }, { id: 'developer', label: '개발자' }, ...]
+// 17개 역할: portal, developer, operation, sales, design, planner, marketer, finance, hr,
+//            teamlead, depthead, executive, producer, aiadmin, ceo, admin, superadmin
+
+// getRoleUrl(roleId) — 역할별 URL 반환
+// developer → '/dev/', hr → '/hr/', producer → '/producer/', 나머지 → '/${roleId}'
+```
+
+### 제공 export
+
+| Export | 타입 | 설명 |
+|--------|------|------|
+| `ROLES` | `string[]` | 역할 ID 배열 (17개, 드롭다운 표시 순서) |
+| `roleLabels` | `Record<string, string>` | 역할 ID → 한글 라벨 |
+| `defaultUserNames` | `Record<string, string>` | 역할 ID → 기본 사용자명 (OAuth 비활성 시) |
+| `availableRoles` | `{ id, label }[]` | 역할 전환 드롭다운용 배열 |
+| `ROLE_URL_MAP` | `Record<string, string>` | 별도 서브앱 역할의 URL 매핑 |
+| `getRoleUrl` | `(roleId) => string` | roleId에 해당하는 URL 경로 반환 |
+
 ## @jabis/layout 역할 전환 기능
 
 Header 컴포넌트에서 역할 배지 클릭 시 역할 전환 드롭다운을 표시할 수 있다.
 
 ```jsx
+import { availableRoles, getRoleUrl } from '@jabis/menu'
+
 <DashboardLayout
   // ...기존 props...
-  availableRoles={[
-    { id: 'developer', label: '개발자' },
-    { id: 'operation', label: '운영자' },
-    // ...
-  ]}
+  availableRoles={availableRoles}
   onRoleChange={(roleId) => {
     localStorage.setItem('jabis_role', roleId)
-    navigate(`/${roleId}`)
+    window.location.href = getRoleUrl(roleId)
   }}
 >
 ```
 
-- `availableRoles`: `[{ id, label }]` 배열. `@jabis/menu`의 `ROLES`와 `roleLabels`로 생성 가능.
+- `availableRoles`: `@jabis/menu`에서 import (하드코딩 금지)
+- `getRoleUrl`: `@jabis/menu`에서 import — 별도 서브앱(developer, hr, producer)은 각각의 경로로, 나머지는 jabis 메인으로 이동
 - `onRoleChange`: 역할 변경 시 호출. localStorage 업데이트 + 페이지 이동 처리.
 - 두 prop이 모두 없으면 기존 정적 Badge로 폴백 (하위 호환).
 
