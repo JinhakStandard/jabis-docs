@@ -217,12 +217,19 @@ CLAUDE.local.md
 ```
 세션 시작 → /session-start (브리핑)
     ↓
+feature 브랜치 생성 (feature/{작업명})
+    ↓
 작업 수행 (hooks가 자동으로 보안 감시)
     ↓
 커밋 → /commit (표준 형식 + .ai/ 자동 업데이트)
     ↓
-PR 리뷰 → /review-pr (표준 기준 검토)
+feature 브랜치 push → Bitbucket PR 생성 (API)
+    ↓
+navskh 리뷰/승인 → Merge → 자동 배포
 ```
+
+> **중요**: main에 직접 push하지 않습니다. 모든 작업은 feature 브랜치 → PR → 승인 → merge 플로우를 따릅니다.
+> 상세 정책은 `policies/git-workflow.md`의 "3. PR 워크플로우" 및 "4. Claude Code PR 자동 생성" 참조.
 
 ---
 

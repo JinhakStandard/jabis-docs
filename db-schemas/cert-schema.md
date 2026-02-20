@@ -132,11 +132,21 @@ $$ LANGUAGE plpgsql;
 | jabis-client-001 | jabis_d93fb708be5b5eb7 | JABIS 메인 프론트엔드 | jabis.jinhakapply.com | /auth/callback | openid, profile, email | `register-jabis-client.sql` |
 | jabis-producer-client-001 | jabis_producer_a7c3e91f4d2b8e06 | JABIS 프로듀서 | jabis.jinhakapply.com | /producer/auth/callback | openid, profile, email | `register-jabis-producer-client.sql` |
 
-### 미등록 클라이언트 (등록 예정)
+### Client ID 공유 정책
 
-| 프로젝트 | 도메인 | 콜백 경로 | 비고 |
-|---------|--------|----------|------|
-| jabis-dev | jabis.jinhakapply.com | /dev/auth/callback | .env.production에 client_id 비어있음 |
+**같은 도메인(`jabis.jinhakapply.com`)의 dept 프로젝트는 jabis 메인 client_id를 공유한다.**
+
+jabis-cert는 redirect_uri 검증 시 도메인만 확인하므로, 같은 도메인 내 서브 경로(`/hr/auth/callback`, `/finance/auth/callback` 등)는 별도 클라이언트 등록 없이 동일한 client_id로 인증이 가능하다.
+
+| 프로젝트 | 사용하는 Client ID | 비고 |
+|---------|-------------------|------|
+| jabis (메인) | `jabis_d93fb708be5b5eb7` | 원본 등록 |
+| jabis-hr | `jabis_d93fb708be5b5eb7` | 메인과 공유 |
+| jabis-dev | `jabis_d93fb708be5b5eb7` | 메인과 공유 |
+| jabis-finance | `jabis_d93fb708be5b5eb7` | 메인과 공유 |
+| jabis-producer | `jabis_producer_a7c3e91f4d2b8e06` | 별도 등록 (레거시) |
+
+> **새 dept 프로젝트 생성 시** `.env.production`의 `VITE_OAUTH_CLIENT_ID`에 `jabis_d93fb708be5b5eb7`를 사용한다. 별도 클라이언트 등록은 불필요.
 
 ## 3. SQL 파일 위치
 

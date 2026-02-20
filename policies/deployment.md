@@ -86,6 +86,24 @@ common-helm 서브차트(v1.0.4)의 deployment 템플릿은 `extraEnvVars` 키�
 
 > **주의:** Helm values에 `env`로 넣으면 동작하는 것처럼 보이지만 실제 Pod에는 반영되지 않는다. 반드시 Dockerfile을 확인할 것.
 
+### 신규 프로젝트 배포 순서 (중요)
+
+새 프로젝트를 처음 배포할 때는 **Helm 설정이 먼저, 프로젝트 파이프라인이 나중** 순서를 따른다.
+
+```
+1. jabis-helm에 앱/ingress 설정 추가 → 커밋 → push
+   (초기 이미지 태그는 v1.0.0-prod.1 등 플레이스홀더)
+2. 프로젝트(jabis-finance 등) Pipeline 실행
+   → Docker 이미지 빌드 → Harbor push
+   → jabis-helm의 image.tag를 실제 빌드 버전으로 업데이트
+   → Helm 패키지 → Harbor push
+3. ArgoCD가 감지 → K3S 배포
+```
+
+**이유:** 파이프라인의 `update-helm` 단계가 `yq`로 jabis-helm values의 이미지 태그를 업데이트하는데, 해당 앱 키(`jabis-finance`)가 values 파일에 이미 존재해야 업데이트가 성공한다. Helm 설정 없이 파이프라인만 돌리면 태그 업데이트가 실패한다.
+
+> **요약:** Helm에 자리를 먼저 만들고 → 프로젝트 파이프라인이 그 자리에 버전을 채우는 방식.
+
 ### 순차 배포 정책 (중요)
 
 **여러 프로젝트를 동시에 배포하면 Helm 버전 충돌이 발생할 수 있다.**
@@ -179,6 +197,26 @@ jabis-maker(포트 3200)가 각 프로젝트의 `dist/`를 `/preview/{프로젝�
 | jabis-producer | `pnpm build:preview` | `/preview/jabis-producer/` |
 | jabis-maker-admin | `pnpm build:preview` | `/preview/jabis-maker-admin/` |
 | jabis-hr | `pnpm build:preview` | `/preview/jabis-hr/` |
+| jabis-finance | `pnpm build:preview` | `/preview/jabis-finance/` |
+
+### 구현 방식
+
+### 모노레포 프로젝트 심볼릭 링크 (필수)
+
+jabis-maker는 `{프로젝트루트}/dist/`에서 파일을 서빙한다. 모노레포 구조(`apps/{앱이름}/`)를 사용하는 프로젝트는 빌드 결과가 `apps/{앱이름}/dist/`에 생성되므로, 프로젝트 루트에 심볼릭 링크가 필요하다.
+
+```bash
+ln -s apps/{앱이름}/dist dist
+```
+
+| 프로젝트 | 심볼릭 링크 |
+|---------|------------|
+| jabis-hr | `dist -> apps/hr/dist` |
+| jabis-dev | `dist -> apps/dev/dist` |
+| jabis-producer | `dist -> apps/producer/dist` |
+| jabis-finance | `dist -> apps/finance/dist` |
+
+> 심볼릭 링크가 없으면 jabis-maker에서 "No build output found" 오류가 발생한다.
 
 ### 구현 방식
 
@@ -334,4 +372,5 @@ shared-pages를 사용하는 새 프로젝트를 만들 때:
 2. `.env.production`에 `VITE_GATEWAY_URL`, `VITE_OAUTH_*` 설정
 3. `main.jsx`에서 shared-pages API 클라이언트 주입 (`setOrgApiClient`, `setApprovalApiClient`)
 4. `vite.config.js`에 개발용 proxy 설정 (`/gateway-api`, `/auth-api`)
-5. `pnpm build:preview`로 미리보기 빌드 후 API 호출 정상 동작 확인
+5. 모노레포 구조인 경우 루트에 `ln -s apps/{앱이름}/dist dist` 심볼릭 링크 생성
+6. `pnpm build:preview`로 미리보기 빌드 후 API 호출 정상 동작 확인
