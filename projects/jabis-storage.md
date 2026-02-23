@@ -141,6 +141,10 @@ jabis-storage는 별도 DNS/인그레스 없이 **jabis-api-gateway를 통해** 
 - jabis-helm (Kubernetes 배포 설정)
 - jabis-api-gateway (프록시 — `STORAGE_SERVICE_URL` 환경변수)
 
+## API 명세 및 프론트엔드 사용법
+
+상세 API 스펙과 React 호출 예시 코드는 [api-specs/storage-api.md](../api-specs/storage-api.md) 참조.
+
 ## 참고
 
 - ara 프로젝트의 MinIO 패턴을 기반으로 구축
