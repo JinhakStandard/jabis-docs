@@ -121,7 +121,7 @@ jabis-storage는 별도 DNS/인그레스 없이 **jabis-api-gateway를 통해** 
 ```
 프론트엔드 → https://jabis-gateway.jinhakapply.com/api/storage/*
                          ↓ (프록시)
-             http://jabis-storage-prod-service.jabis:3400/api/storage/*
+             http://jabis-storage-prod-service.jabis-prod:3400/api/storage/*
 ```
 
 - 프론트엔드에서는 `jabis-gateway.jinhakapply.com/api/storage/upload` 등으로 호출
