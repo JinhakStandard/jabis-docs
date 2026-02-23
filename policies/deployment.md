@@ -156,6 +156,7 @@ http://{서비스명}-prod-service.{네임스페이스}:{포트}
 |--------|----------|-------------|
 | jabis-cert | `http://jabis-cert-prod-service.jabis-prod:3000` | jabis-cert.jinhakapply.com |
 | jabis-api-gateway | `http://jabis-api-gateway-prod-service.jabis-prod:3100` | jabis-gateway.jinhakapply.com |
+| jabis-storage | `http://jabis-storage-prod-service.jabis-prod:3400` | 없음 (gateway 프록시) |
 
 ### 주의사항
 - 외부 도메인(`https://xxx.jinhakapply.com`)으로 호출하면 Ingress를 거쳐 외부 IP로 인식됨

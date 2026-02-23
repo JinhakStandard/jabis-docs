@@ -147,3 +147,4 @@ http://{서비스명}-prod-service.jabis-prod:{포트}
 |--------|----------|
 | jabis-cert | `http://jabis-cert-prod-service.jabis-prod:3000` |
 | jabis-api-gateway | `http://jabis-api-gateway-prod-service.jabis-prod:3100` |
+| jabis-storage | `http://jabis-storage-prod-service.jabis-prod:3400` |
