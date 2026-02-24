@@ -91,6 +91,36 @@ Dockerfile ENV (비민감) ──────►   ENV 변수로 설정
   → 게이트웨이: 토큰 검증 → dev-user로 처리 → 정상 응답
 ```
 
+### 역할 기반 접근 제어 (RBAC)
+
+JABIS는 `organization.user_roles` 테이블 기반 역할 시스템을 사용합니다.
+
+**JWT에 roles 포함**: jabis-cert가 세션 토큰 생성 시 `roles` 배열을 JWT에 포함하고, `/api/oauth/userinfo` 응답에도 반환합니다.
+
+**superadmin 만능 접근 정책**:
+- `superadmin` 역할을 가진 사용자는 **모든 부서 프로젝트에 접근 가능**
+- 각 dept 프로젝트(jabis-finance, jabis-hr, jabis-dev 등)는 해당 역할 + superadmin을 허용해야 함
+- 예: jabis-finance → `['finance', 'superadmin']` 허용
+
+| 프로젝트 | 필요 역할 | superadmin 접근 |
+|---------|----------|----------------|
+| jabis-finance | finance | O |
+| jabis-hr | hr | O |
+| jabis-dev | developer | O |
+| jabis-producer | producer | O |
+| jabis-sysadmin | superadmin | O (전용) |
+
+**프론트엔드 역할 체크 패턴**:
+```javascript
+const ALLOWED_ROLES = ['finance', 'superadmin']
+const hasAccess = (roles) => roles?.some(r => ALLOWED_ROLES.includes(r))
+
+// DeptLayout에서 OAuth 활성화 시 체크
+if (OAUTH_ENABLED && isAuthenticated && !hasAccess(userInfo?.roles)) {
+  return <AccessDeniedPage />
+}
+```
+
 ---
 
 ## 3. DB 보안
