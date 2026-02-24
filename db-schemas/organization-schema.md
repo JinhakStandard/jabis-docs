@@ -14,7 +14,8 @@ organization.departments          부서 (계층구조)
     ├── organization.employees    직원 (부서 소속)
     └── ...
 organization.users                사용자 (OAuth 계정 — 직원 매핑)
-    └── organization.user_permissions  사용자별 권한
+    ├── organization.user_roles       사용자별 역할 (portal, developer 등)
+    └── organization.user_permissions  사용자별 권한 (페이지/기능 세부 권한)
 organization.permissions          권한 정의
 ```
 
@@ -80,7 +81,26 @@ OAuth 계정과 직원을 매핑하는 테이블
 **사용자 ID 규칙**: JWT의 `sub` 또는 `email`에서 `@` 앞부분만 추출 (절대 규칙)
 - 예: `navskh@jinhak.com` → `navskh`
 
-### 4. organization.permissions (권한 정의)
+### 4. organization.user_roles (사용자별 역할)
+
+사용자에게 부여된 역할 매핑 테이블. jabis-cert JWT에 `roles` 배열로 포함됨.
+
+| 컬럼 | 타입 | 제약 | 기본값 | 설명 |
+|------|------|------|--------|------|
+| `user_id` | TEXT | PK, FK → users(id) ON DELETE CASCADE, NOT NULL | - | 사용자 ID |
+| `role` | TEXT | PK, NOT NULL | - | 역할 ID (portal, developer, hr 등) |
+| `granted_by` | TEXT | - | NULL | 부여자 (user_id 또는 'system') |
+| `granted_at` | TIMESTAMPTZ | NOT NULL | `NOW()` | 부여 시각 |
+
+**유효 역할 목록** (17개, `@jabis/menu` 기준):
+`portal`, `developer`, `operation`, `sales`, `design`, `planner`, `marketer`, `finance`, `hr`, `teamlead`, `depthead`, `executive`, `producer`, `aiadmin`, `ceo`, `admin`, `superadmin`
+
+**역할 부여 방식**:
+- jabis-sysadmin UI에서 superadmin이 부여/회수
+- 최초 로그인 시 jabis-cert가 `portal` 역할 자동 부여 (roles 비어있을 때)
+- employeeId 기반 부여 시 user 자동 생성 (`ensureUserForEmployee`)
+
+### 5. organization.permissions (권한 정의)
 
 | 컬럼 | 타입 | 제약 | 기본값 | 설명 |
 |------|------|------|--------|------|
@@ -91,7 +111,7 @@ OAuth 계정과 직원을 매핑하는 테이블
 | `parent_id` | TEXT | - | NULL | 상위 권한 (계층 구조용) |
 | `created_at` | TIMESTAMPTZ | NOT NULL | `NOW()` | 생성일 |
 
-### 5. organization.user_permissions (사용자별 권한)
+### 6. organization.user_permissions (사용자별 권한)
 
 | 컬럼 | 타입 | 제약 | 기본값 | 설명 |
 |------|------|------|--------|------|
@@ -109,6 +129,8 @@ OAuth 계정과 직원을 매핑하는 테이블
 | `idx_org_employees_department` | employees | `department_id` | 부서별 직원 조회 |
 | `idx_org_employees_name` | employees | `name` | 이름 검색 |
 | `idx_org_users_employee` | users | `employee_id` | 직원 매핑 조회 |
+| `idx_org_user_roles_user` | user_roles | `user_id` | 사용자별 역할 조회 |
+| `idx_org_user_roles_role` | user_roles | `role` | 역할별 사용자 조회 |
 | `idx_org_user_permissions_user` | user_permissions | `user_id` | 사용자 권한 조회 |
 
 ---
@@ -135,16 +157,22 @@ users (사용자)
   ├── employee_id (FK → employees.id)
   └── ...
        │
-       │ N:M
-       ▼
-user_permissions
-  ├── user_id (FK → users.id)
-  └── permission_id (FK → permissions.id)
-                          │
-                          ▼
-                    permissions (권한)
-                      ├── id (PK)
-                      └── ...
+       ├── 1:N
+       │    ▼
+       │  user_roles (역할)
+       │    ├── user_id (FK → users.id)
+       │    └── role (portal, developer, hr...)
+       │
+       └── N:M
+            ▼
+       user_permissions (권한)
+         ├── user_id (FK → users.id)
+         └── permission_id (FK → permissions.id)
+                               │
+                               ▼
+                         permissions (권한 정의)
+                           ├── id (PK)
+                           └── ...
 ```
 
 ---
@@ -162,7 +190,8 @@ user_permissions
 |--------|------|------|
 | departments | 47+ | 진학사/진학어플라이 전체 조직도 |
 | employees | 63+ | 본부장~사원 |
-| users | 1 | ka3794 (슈퍼관리자) |
+| users | 1+ | OAuth 로그인 시 자동 생성, employeeId 기반 자동 생성 |
+| user_roles | - | superadmin이 jabis-sysadmin에서 관리 |
 | permissions | 24 | 15 페이지 + 9 기능 |
 
 ### 배포 방법
