@@ -94,6 +94,27 @@ npm run lint      # ESLint 검사
 - session-start
 - test
 
+## JWT roles 포함
+
+jabis-cert는 세션 토큰(JWT) 생성 시 `organization.user_roles`에서 사용자 역할을 조회하여 `roles` 배열로 포함합니다.
+
+**조회 체인**: `users.email` → `employees.id` → `user_roles.employee_id` → `roles[]`
+
+**`/api/oauth/userinfo` 응답**:
+```json
+{
+  "sub": "user-uuid",
+  "name": "홍길동",
+  "email": "hong@jinhakapply.com",
+  "email_verified": true,
+  "roles": ["portal", "finance"]
+}
+```
+
+- 역할이 없으면 `portal` 자동 부여 (기본 역할)
+- `roles` 배열은 프론트엔드에서 RBAC 접근 제어에 사용됨
+- `SessionUser` 타입에 `roles?: string[]` 필드 포함
+
 ## 프로젝트 고유 규칙
 - Next.js 14.2.15 고정 (15/16 사용 금지 - SSR 이슈)
 - React 18.3.1 고정 (19 사용 금지)

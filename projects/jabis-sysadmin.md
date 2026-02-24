@@ -43,7 +43,7 @@ jabis-sysadmin/
 │       │   ├── main.jsx
 │       │   ├── pages/
 │       │   │   ├── DashboardPage.jsx
-│       │   │   ├── RoleManagementPage.jsx     # 권한 관리 (P0)
+│       │   │   ├── RoleManagementPage.jsx     # 역할 관리 (P0, 완료)
 │       │   │   ├── UserManagementPage.jsx     # 사용자 관리 (P1)
 │       │   │   ├── SystemSettingsPage.jsx     # 시스템 설정 (P2)
 │       │   │   └── ComingSoonPage.jsx
@@ -79,13 +79,15 @@ jabis-sysadmin/
 **DB 테이블**: `organization.user_roles`
 ```sql
 CREATE TABLE organization.user_roles (
-  user_id TEXT NOT NULL,        -- organization.users.id (이메일 local part)
+  employee_id UUID NOT NULL REFERENCES organization.employees(id),
   role TEXT NOT NULL,           -- 역할 ID (portal, developer, finance, hr 등)
   granted_by TEXT,              -- 부여자 (user_id 또는 'system')
   granted_at TIMESTAMPTZ DEFAULT NOW(),
-  PRIMARY KEY (user_id, role)
+  PRIMARY KEY (employee_id, role)
 );
 ```
+
+> **employee_id 기반**: OAuth 로그인 없이도 직원에게 역할 부여 가능 (2024-02 마이그레이션 완료)
 
 **17개 역할 (availableRoles)**:
 portal, developer, operation, sales, design, planner, marketer, finance, hr, teamlead, depthead, executive, producer, aiadmin, ceo, admin, superadmin
@@ -128,8 +130,8 @@ portal, developer, operation, sales, design, planner, marketer, finance, hr, tea
 
 | 메뉴 | 경로 | 우선순위 | 상태 |
 |------|------|----------|------|
-| 대시보드 | / | - | P0 |
-| 권한 관리 | /roles | P0 | 개발 예정 |
+| 대시보드 | /dashboard | - | 완료 |
+| 역할 관리 | /roles | P0 | 완료 |
 | 사용자 관리 | /users | P1 | 개발 예정 |
 | 시스템 설정 | /settings | P2 | 개발 예정 |
 
@@ -170,10 +172,10 @@ roleBadgeLabel: '시스템 관리자'
 **POST body 예시**:
 ```json
 // 역할 부여
-{ "action": "grant", "data": { "userId": "hong", "role": "finance" } }
+{ "action": "grant", "data": { "employeeId": "uuid-...", "role": "finance" } }
 
 // 역할 회수
-{ "action": "revoke", "data": { "userId": "hong", "role": "finance" } }
+{ "action": "revoke", "data": { "employeeId": "uuid-...", "role": "finance" } }
 ```
 
 #### P1 — 사용자 조회 API
@@ -212,14 +214,22 @@ ROLE_URL_MAP: {
 - serve.json: `/superadmin/**` → `/superadmin/index.html` (SPA rewrite)
 - serve -s dist -l 3000
 
-## 배포 미완료 사항
+### 구현 완료 기능 (역할 관리)
 
-- [ ] Bitbucket 리포 생성
+- 17개 역할 카드 뷰 (사용자 수 표시)
+- 부서별 트리 구조 직원 선택 (검색 + 자동 펼침)
+- 부서 단위 일괄 역할 부여 ("전체 부여" 버튼)
+- 역할 사용자 목록 부서별 그룹핑
+- 역할 부여/회수 + 토스트 알림
+
+## 배포 상태
+
+- [x] Bitbucket 리포 생성
+- [x] jabis-api-gateway에 `/api/sysadmin/*` 라우트 추가
+- [x] ROLE_URL_MAP에 superadmin 외부 앱 등록
 - [ ] jabis-cert OAuth client_id 발급
 - [ ] jabis-helm ingress/values 설정
 - [ ] .env.production에 client_id 반영
-- [ ] ROLE_URL_MAP에 superadmin 외부 앱 등록
-- [ ] jabis-api-gateway에 `/api/sysadmin/*` 라우트 추가
 
 ## 프로젝트 고유 규칙
 

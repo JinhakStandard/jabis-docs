@@ -66,6 +66,18 @@ userRole: 'finance'
 roleBadgeLabel: '재무담당자'
 ```
 
+## 접근 제어 (RBAC)
+
+OAuth 활성화 시 `finance` 또는 `superadmin` 역할이 있어야 접근 가능합니다.
+
+```javascript
+const ALLOWED_ROLES = ['finance', 'superadmin']
+// DeptLayout에서 체크 → 권한 없으면 AccessDeniedPage 표시
+```
+
+- 미리보기(OAuth 비활성)에서는 체크하지 않음
+- superadmin은 모든 dept 프로젝트 접근 가능 (정책: security.md RBAC 섹션)
+
 ## 환경 설정
 
 | 환경 | OAuth | Gateway URL |
