@@ -453,15 +453,16 @@ WHERE request_number LIKE 'FC-' || TO_CHAR(NOW(), 'YYYYMMDD') || '%';
 
 | 참조 대상 | 참조 방법 | 용도 |
 |----------|---------|------|
-| `organization.users.id` | `card_users.email` 매칭 | 로그인 사용자 → 카드 사용자 매핑 |
+| `organization.users` | JWT email → `LOWER(u.email)` 매칭 | 로그인 사용자 식별 |
+| `organization.employees` | `users.employee_id` → `employees.id` | 직원-부서 연결 |
+| `organization.departments` | 재귀 CTE로 부서 트리 상향 탐색 (`type='company'`) | 사용자 소속 법인 조회 |
 | `organization.departments` | `card_departments.name` = `organization.departments.name` JOIN | 부서명 원본 조회, 부서 목록 조회 |
 | `approval.documents` | `card_return_requests.document_number` | 전자결재 문서 외부 참조 (선택) |
 | jabis-storage (MinIO) | `card_receipts.file_path` | 영수증 파일 저장소 |
 
-> **참고**: `card_users.email`로 `organization.users`의 이메일과 매칭하여 로그인 사용자를 식별한다.
+> **법인 조회 방식**: `organization.users.email` → `employees.department_id` → 부서 트리를 `parent_id`로 상향 탐색하여 `type='company'`인 노드의 `name`을 법인명으로 사용한다. 재귀 CTE 사용, 이메일 비교는 `LOWER()` 대소문자 무시.
 > **참고**: `card_departments.name`으로 `organization.departments.name`과 매칭하여 부서명을 조회한다. API 응답의 부서명은 항상 `organization.departments`에서 가져온다.
-> 직접 FK를 걸지 않는 이유: 카드 관리 사용자 목록은 재무담당자가 독립적으로 관리해야 하며,
-> organization 스키마의 변경에 영향받지 않아야 한다.
+> **인증**: card_users 기반 인증은 JWT roles 기반(`'finance'` 역할)으로 전환됨 (ADR-002).
 
 ---
 
