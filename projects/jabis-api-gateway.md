@@ -120,6 +120,29 @@ npm run openapi:preview  # OpenAPI 미리보기
 - jabis-cert 연동: CERT_SERVER_URL로 /api/internal/token/introspect 호출
 - CDN, 분산 트레이싱, GeoIP, PagerDuty 등 구현 금지 (인프라 없음)
 
+## certService (인증 서비스 연동)
+
+`src/services/certService.ts` — jabis-cert를 통한 JWT 토큰 검증.
+
+### CERT_SERVER_URL 설정
+- Dockerfile: `http://jabis-cert-prod-service.jabis-prod:3000` (K3S 내부 URL)
+- 외부 도메인(`https://jabis-cert.jinhakapply.com`) 사용 금지 — deployment.md 6절 참조
+- Helm values의 `env:` 키는 common-helm에서 무시됨 → Dockerfile의 ENV가 실제 적용
+
+### Circuit Breaker 정책
+- **5회 연속 실패** 시 circuit breaker 활성화 → 30초간 모든 인증 요청 차단 (503)
+- **401/403 응답은 실패로 카운트하지 않음** — 토큰 무효는 서비스 장애가 아님
+- 서비스 장애(타임아웃, 연결 거부, DNS 실패, HTTP 5xx)만 실패로 카운트
+- 에러 메시지에 원인 구분 포함: `circuit_breaker_open`, `connection_refused`, `timeout`, `dns_failure`, `http_{status}`
+
+### 에러 응답 흐름
+```
+certService.introspect() 실패
+  → authValidator catch
+  → ServiceUnavailableError('Authentication service', 원인 메시지)
+  → 503 { error: { code: 'service_unavailable', message: '...', details: '원인' } }
+```
+
 ## 조직 관리 시스템 (Organization)
 
 2026-02-11 구현. 부서/직원/사용자/권한 통합 관리.

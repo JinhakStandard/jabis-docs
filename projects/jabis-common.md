@@ -207,7 +207,7 @@ const getMenuItems = buildMenu('hr', (common) => [
 
 | 그룹 | 라벨 | 아이콘 | 포함 항목 |
 |------|------|--------|----------|
-| `common.work` | 업무 관리 | Briefcase | 할일, 문서작성, 목표관리, 일정, 전자결재 |
+| `common.work` | 업무 관리 | Briefcase | 할일, 문서작성, 목표관리, 일정, 전자결재, 법인카드 신청 |
 | `common.communication` | 소통 | MessageCircle | 메신저, 메일, 회의실 예약 |
 | `common.life` | 사내 생활 | Coffee | 트래져 블로그, 조식, 뉴스, 맛집, 추억 |
 | `common.organization` | 조직/관리 | Building2 | 조직 관리 |
@@ -307,6 +307,15 @@ import { TodoPage, DocumentPage, ApprovalPage } from '@jabis/shared-pages'
 - tailwind.preset.js로 디자인 토큰 통일
 - Git submodule로 jabis, jabis-template, jabis-design-system에서 참조
 - 부서 리포에서 수정 금지 — import만 허용
+
+## 디렉토리 구조 정책 (필수 준수)
+
+> 상세 정책: `jabis-docs/policies/project-structure.md` 1절 참조
+
+- **패키지는 jabis-common 루트에만 생성** — `packages/` 하위 디렉토리에 절대 생성 금지
+- **pnpm-workspace.yaml이 유일한 패키지 등록처** — 여기에 없으면 패키지가 아님
+- **동일 이름 폴더 중복 금지** — 같은 이름의 패키지가 2곳에 존재하면 안 됨
+- **jabis-common 내에 `packages/` 디렉토리 자체를 만들지 않음** — 과거 유물이며 존재 시 삭제 대상
 
 ## shared-pages 수정 정책
 

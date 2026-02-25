@@ -77,6 +77,8 @@ const ALLOWED_ROLES = ['finance', 'superadmin']
 
 - 미리보기(OAuth 비활성)에서는 체크하지 않음
 - superadmin은 모든 dept 프로젝트 접근 가능 (정책: security.md RBAC 섹션)
+- 백엔드: `isFinanceAdmin(roles)` 헬퍼가 `finance` + `superadmin` 역할을 모두 허용 (finance.ts)
+- 사용자 목록: `/api/organization/users` 활용 (별도 finance 엔드포인트 없음, vite proxy에 `/api/organization` 설정됨)
 
 ## 환경 설정
 

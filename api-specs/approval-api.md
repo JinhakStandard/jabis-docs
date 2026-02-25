@@ -158,6 +158,7 @@
     "title": "연차 신청",
     "templateId": "form-leave",
     "content": { "startDate": "2026-02-17", "endDate": "2026-02-17" },
+    "isDraft": false,
     "authorEmployeeId": "EMP001",
     "authorDeptId": "dept-dev",
     "priority": "normal",
@@ -174,6 +175,11 @@
     ]
   }
 }
+```
+
+**isDraft 동작**:
+- `isDraft: true` (또는 생략) → 문서 status = `draft`로 생성 (임시저장)
+- `isDraft: false` → 문서 생성 후 자동으로 `submit` 실행 (status = `in_progress`로 전환, 첫 결재자 활성화)
 ```
 
 #### action: update
