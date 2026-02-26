@@ -206,30 +206,7 @@ http://{서비스명}-prod-service.{네임스페이스}:{포트}
 
 ## 8. 미리보기 빌드 (Preview Build)
 
-jabis-maker(포트 3200)가 각 프로젝트의 `dist/`를 `/preview/{프로젝트명}/` 경로로 서빙한다.
-
-### build vs build:preview
-
-| 스크립트 | vite mode | base path | 용도 |
-|---------|-----------|-----------|------|
-| `pnpm build` | production | `/` 또는 `./` | 운영 배포 (K3S) |
-| `pnpm build:preview` | preview | `/preview/{프로젝트명}/` | 미리보기 (jabis-maker) |
-
-**운영 빌드(`pnpm build`)로 미리보기를 띄우면 base path 불일치로 흰 화면이 발생한다.**
-
-### 프로젝트별 미리보기 빌드 명령
-
-| 프로젝트 | 미리보기 빌드 | preview base path |
-|---------|-------------|-------------------|
-| jabis | `pnpm build:preview` | `/preview/jabis/` |
-| jabis-design-system | `pnpm build:preview` | `/preview/jabis-design-system/` |
-| jabis-dev | `pnpm build:preview` | `/preview/jabis-dev/` |
-| jabis-producer | `pnpm build:preview` | `/preview/jabis-producer/` |
-| jabis-maker-admin | `pnpm build:preview` | `/preview/jabis-maker-admin/` |
-| jabis-hr | `pnpm build:preview` | `/preview/jabis-hr/` |
-| jabis-finance | `pnpm build:preview` | `/preview/jabis-finance/` |
-
-### 구현 방식
+> 미리보기/운영 환경의 전체 정의는 `policies/environments.md`를 참조하세요.
 
 ### 모노레포 프로젝트 심볼릭 링크 (필수)
 
@@ -283,25 +260,9 @@ base: mode === 'preview' ? '/preview/{프로젝트명}/' : '/',
 
 ---
 
-## 10. 프론트엔드 API 환경별 설정
+## 10. 프론트엔드 API 설정
 
-프론트엔드에서 API 호출 시, **개발 / 미리보기 / 운영** 3가지 환경에 따라 설정이 달라진다.
-
-### 환경별 API 동작 방식
-
-| 환경 | API 경로 | OAuth | 인증 방식 |
-|------|---------|-------|----------|
-| **개발** (`pnpm dev`) | Vite proxy (`/gateway-api` → localhost:3100) | OFF | 없음 (프록시 우회) |
-| **미리보기** (`pnpm build:preview`) | `VITE_GATEWAY_URL` 직접 호출 | OFF | `X-Dev-Token` 헤더 |
-| **운영** (`pnpm build`) | `VITE_GATEWAY_URL` 직접 호출 | ON | OAuth JWT 쿠키 |
-
-### 환경변수 (.env 파일)
-
-| 파일 | VITE_OAUTH_ENABLED | VITE_GATEWAY_URL | VITE_DEV_TOKEN |
-|------|-------------------|------------------|----------------|
-| `.env.development` | `false` | 불필요 (Vite proxy) | 불필요 |
-| `.env.preview` | `false` | `https://jabis-gateway.jinhakapply.com` | 발급된 토큰 |
-| `.env.production` | `true` | `https://jabis-gateway.jinhakapply.com` | 불필요 |
+> 환경별 API 동작 방식 및 환경변수는 `policies/environments.md`를 참조하세요.
 
 ### API 클라이언트 패턴 — 2가지 방식
 
