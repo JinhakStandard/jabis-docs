@@ -48,6 +48,7 @@ pnpm build:preview    # 미리보기 빌드
 | | 자산 실사 | /asset/inventory | 준비중 |
 | 법인카드 관리 | 카드 현황 | /card/status | 개발중 |
 | | 불출/반납 승인 | /card/approval | 개발중 |
+| | 법인카드 장부 | /card/ledger | 개발중 |
 | | 카드 설정 | /card/settings | 개발중 |
 
 ### 공통 메뉴 (@jabis/menu)
