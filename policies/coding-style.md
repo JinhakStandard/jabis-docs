@@ -144,9 +144,9 @@ shared-pages 내 모든 store와 페이지가 해당 함수를 사용한다.
 ### 구조
 
 ```
-shared-pages/src/stores/apiClient.js    ← 유일한 API 클라이언트 (setSharedApiClient, apiGet, apiPost)
+shared-pages/src/stores/apiClient.js    ← 유일한 API 클라이언트 (setSharedApiClient, apiGet, apiPost, apiUpload, getApiBaseUrl)
 shared-pages/src/stores/approvalStore.js  ← import { apiGet, apiPost } from './apiClient'
-shared-pages/src/stores/cardApi.js        ← import { apiGet, apiPost } from './apiClient'
+shared-pages/src/stores/cardApi.js        ← import { apiGet, apiPost, apiUpload } from './apiClient'
 shared-pages/src/stores/organizationStore.js ← import { apiGet, apiPost } from './apiClient'
 ```
 
@@ -156,27 +156,35 @@ shared-pages/src/stores/organizationStore.js ← import { apiGet, apiPost } from
 import { setSharedApiClient } from '@jabis/shared-pages'
 
 // 앱 부팅 시 1회 호출 — 이것만으로 모든 shared-pages API가 게이트웨이를 향함
-setSharedApiClient({ apiGet: makeApiGet, apiPost: makeApiPost })
+setSharedApiClient({ apiGet: makeApiGet, apiPost: makeApiPost, apiUpload: makeApiUpload, apiBaseUrl: GATEWAY_BASE })
+
+// <a href>나 window.open 등 비-fetch 용도에서 게이트웨이 URL 사용:
+// import { getApiBaseUrl } from '@jabis/shared-pages'
+// <a href={`${getApiBaseUrl()}/api/storage/download?...`}>다운로드</a>
 ```
 
 ### 소비 프로젝트 로컬 API 모듈 — 올바른 패턴
 
 소비 프로젝트에 자체 API 모듈(예: `financeApi.js`)이 있는 경우에도
-`@jabis/shared-pages`에서 `apiGet`/`apiPost`를 import하여 사용한다.
+`@jabis/shared-pages`에서 `apiGet`/`apiPost`/`apiUpload`를 import하여 사용한다.
 자체 `let client` + `setXxxApiClient` 패턴을 만들지 않는다.
 
 ```jsx
 // ✅ 올바른 패턴
-import { apiGet, apiPost } from '@jabis/shared-pages'
+import { apiGet, apiPost, apiUpload } from '@jabis/shared-pages'
 
 export const financeApi = {
   getMe: () => apiGet('/api/finance/me'),
   getCards: () => apiGet('/api/finance/cards'),
+  uploadFile: (formData) => apiUpload('/api/storage/upload', formData),
 }
 
 // ❌ 금지 패턴 — 개별 setter 생성
 let client = { apiGet: null, apiPost: null }
 export function setFinanceApiClient(c) { client = c }
+
+// ❌ 금지 패턴 — fetch 직접 호출 (multipart 포함)
+const res = await fetch('/api/storage/upload', { method: 'POST', body: formData })
 ```
 
 ### 금지 패턴 요약
@@ -185,8 +193,9 @@ export function setFinanceApiClient(c) { client = c }
 |----------|------|
 | store마다 `let _apiGet`, `setXxxApiClient` 생성 | `import { apiGet } from './apiClient'` |
 | 소비 프로젝트에서 `setXxxApiClient` 여러 개 호출 | `setSharedApiClient()` 1회 호출 |
-| 로컬 API 모듈에서 자체 client 패턴 | `import { apiGet, apiPost } from '@jabis/shared-pages'` |
-| `fetch(path)` 직접 호출 (상대 경로) | `apiGet(path)` 사용 — 게이트웨이 URL이 자동 적용 |
+| 로컬 API 모듈에서 자체 client 패턴 | `import { apiGet, apiPost, apiUpload } from '@jabis/shared-pages'` |
+| `fetch(path)` 직접 호출 (상대 경로) | `apiGet(path)` / `apiUpload(path, formData)` 사용 — 게이트웨이 URL이 자동 적용 |
+| `fetch` + `FormData`로 파일 업로드 | `apiUpload(path, formData)` 사용 — multipart도 게이트웨이 경유 필수 |
 
 ### 왜 이 규칙이 필요한가
 
