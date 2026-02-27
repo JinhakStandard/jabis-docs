@@ -108,8 +108,10 @@ jabis-common/
 │       │   └── useApprovalPermissions.js      # 결재 권한 판단
 │       ├── utils/            # 유틸리티
 │       │   └── approvalDetailUtils.jsx        # 날짜/금액 포맷, 필드 렌더링
-│       ├── stores/           # Zustand 스토어 (10개)
+│       ├── stores/           # Zustand 스토어 (10개) + API 클라이언트
+│       │   ├── apiClient.js           # ★ 글로벌 API 클라이언트 (setSharedApiClient, apiGet, apiPost)
 │       │   ├── approvalStore.js       # 결재 문서 CRUD, 승인/반려, 참조자/관련문서
+│       │   ├── cardApi.js             # 법인카드 API (apiClient 사용)
 │       │   ├── documentStore.js       # 문서 CRUD
 │       │   ├── goalStore.js           # 목표 관리
 │       │   ├── messengerStore.js      # 메신저
@@ -260,6 +262,68 @@ import { availableRoles, getRoleUrl } from '@jabis/menu'
 - `getRoleUrl`: `@jabis/menu`에서 import — 별도 서브앱(developer, hr, producer)은 각각의 경로로, 나머지는 jabis 메인으로 이동
 - `onRoleChange`: 역할 변경 시 호출. localStorage 업데이트 + 페이지 이동 처리.
 - 두 prop이 모두 없으면 기존 정적 Badge로 폴백 (하위 호환).
+
+## @jabis/shared-pages 글로벌 API 클라이언트
+
+> **정책 문서**: `jabis-docs/policies/coding-style.md` 8절
+
+shared-pages 내 모든 API 호출은 `apiClient.js`의 `apiGet`/`apiPost`를 사용한다.
+소비 앱은 부팅 시 `setSharedApiClient()`를 **1회만** 호출하면 된다.
+
+### 소비 앱 main.jsx
+
+```jsx
+import { setSharedApiClient } from '@jabis/shared-pages'
+
+const GATEWAY_BASE = import.meta.env.DEV ? '' : (import.meta.env.VITE_GATEWAY_URL || '')
+
+function makeApiGet(path) {
+  const headers = {}
+  const token = getAccessToken()
+  if (token) headers['Authorization'] = `Bearer ${token}`
+  return fetch(`${GATEWAY_BASE}${path}`, { credentials: 'include', headers })
+    .then(res => { if (!res.ok) throw new Error(`API 요청 실패 (${res.status})`); return res.json() })
+    .then(json => { if (!json.success) throw new Error(json.error?.message || 'API 응답 오류'); return json.data })
+}
+
+function makeApiPost(path, body) {
+  const headers = { 'Content-Type': 'application/json' }
+  const token = getAccessToken()
+  if (token) headers['Authorization'] = `Bearer ${token}`
+  return fetch(`${GATEWAY_BASE}${path}`, { method: 'POST', credentials: 'include', headers, body: JSON.stringify(body) })
+    .then(res => { if (!res.ok) throw new Error(`API 요청 실패 (${res.status})`); return res.json() })
+    .then(json => { if (!json.success) throw new Error(json.error?.message || 'API 응답 오류'); return json.data })
+}
+
+setSharedApiClient({ apiGet: makeApiGet, apiPost: makeApiPost })
+```
+
+### shared-pages 내부 store/API 모듈
+
+```jsx
+// store에서 사용
+import { apiGet as _apiGet, apiPost as _apiPost } from './apiClient'
+
+// 소비 프로젝트 로컬 API 모듈에서 사용
+import { apiGet, apiPost } from '@jabis/shared-pages'
+```
+
+### export 구성
+
+| Export | 타입 | 설명 |
+|--------|------|------|
+| `setSharedApiClient` | `({ apiGet, apiPost }) => void` | 글로벌 API 함수 주입 (앱 부팅 시 1회) |
+| `apiGet` | `(path) => Promise<data>` | GET 요청 래퍼 |
+| `apiPost` | `(path, body) => Promise<data>` | POST 요청 래퍼 |
+
+### deprecated alias (하위 호환)
+
+다음 별칭은 모두 `setSharedApiClient`와 동일하며, 다음 버전에서 제거 예정:
+- `setApprovalApiClient`
+- `setApiClient`
+- `setCardApiClient`
+
+---
 
 ## @jabis/shared-pages 라우팅 통합 현황
 
