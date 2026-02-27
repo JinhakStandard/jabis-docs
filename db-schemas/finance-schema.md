@@ -23,8 +23,8 @@ finance
 ├── card_checkout_requests   불출 기안서
 ├── card_return_requests     반납 기안서
 ├── card_receipts            영수증 첨부 파일
+├── card_company_mappings    사용자별 법인 매핑 (법인카드 노출 오버라이드)
 ├── card_users               기안서 작성 가능 사용자
-├── card_departments         법인카드 관리용 부서
 └── card_status_history      카드/기안서 상태 변경 이력
 ```
 
@@ -88,22 +88,28 @@ finance
 | `created_at` | TIMESTAMPTZ | NOT NULL | NOW() | 생성일 |
 | `updated_at` | TIMESTAMPTZ | NOT NULL | NOW() | 수정일 |
 
-### 2. finance.card_departments (부서별 카드 설정)
+### 2. finance.card_company_mappings (사용자별 법인 매핑)
 
-부서별 카드 관리 설정 테이블. `organization.departments`와 `name` 컬럼으로 연동.
-부서 마스터는 `organization.departments`가 원본이며, 이 테이블은 카드 관리용 정렬/설정만 저장한다.
+사용자별로 법인카드 신청 시 볼 수 있는 법인을 오버라이드하는 테이블.
+매핑이 없으면 소속 법인(organization 트리 탐색)이 기본값으로 사용된다.
 
-> **organization 연동 방식**: `card_departments.name`과 `organization.departments.name`을 매칭하여 JOIN.
-> API 응답에서 부서명은 `organization.departments.name`을 사용한다.
-> `GET /api/finance/departments`는 `organization.departments` 기준으로 조회하고, `card_departments` 설정을 LEFT JOIN한다.
+> **매핑 규칙**:
+> - 매핑 없음 → 소속 법인의 카드만 노출 (기본값)
+> - 매핑 1건 → 해당 법인의 카드만 노출 (소속 법인과 다를 수 있음)
+> - 매핑 2건 → 두 법인 모두의 카드 노출
+>
+> 현재 법인: 진학사, 진학어플라이
 
 | 컬럼 | 타입 | 제약 | 기본값 | 설명 |
 |------|------|------|--------|------|
-| `id` | UUID | PK | gen_random_uuid() | 부서 ID |
-| `name` | VARCHAR(100) | NOT NULL, UNIQUE | — | 부서명 (organization.departments.name과 매칭) |
-| `sort_order` | INTEGER | NOT NULL | 0 | 카드 관리용 정렬 순서 |
+| `id` | UUID | PK | gen_random_uuid() | 매핑 ID |
+| `user_email` | TEXT | NOT NULL | — | 사용자 이메일 |
+| `company` | VARCHAR(100) | NOT NULL | — | 법인명 (진학사, 진학어플라이) |
 | `created_at` | TIMESTAMPTZ | NOT NULL | NOW() | 생성일 |
-| `updated_at` | TIMESTAMPTZ | NOT NULL | NOW() | 수정일 |
+| `created_by` | TEXT | | NULL | 매핑 등록자 이메일 |
+
+**제약 조건**: `UNIQUE (user_email, company)` — 동일 사용자-법인 중복 방지
+**인덱스**: `user_email` — 사용자별 매핑 조회 최적화
 
 ### 3. finance.card_users (기안서 작성자)
 
@@ -200,10 +206,8 @@ finance
 CREATE INDEX idx_finance_cards_status ON finance.corporate_cards(status);
 CREATE INDEX idx_finance_cards_company ON finance.corporate_cards(company);
 
--- card_users
-CREATE INDEX idx_finance_users_email ON finance.card_users(email);
-CREATE INDEX idx_finance_users_department ON finance.card_users(department_id);
-CREATE INDEX idx_finance_users_company ON finance.card_users(company);
+-- card_company_mappings
+CREATE INDEX idx_card_company_mappings_email ON finance.card_company_mappings(user_email);
 
 -- card_checkout_requests
 CREATE INDEX idx_finance_checkout_status ON finance.card_checkout_requests(status);
@@ -235,8 +239,7 @@ CREATE INDEX idx_finance_history_created ON finance.card_status_history(created_
 | `uq_users_email` | card_users | 이메일 유일성 |
 | `uq_checkout_number` | card_checkout_requests | 기안번호 유일성 |
 | `uq_return_checkout` | card_return_requests | 불출 기안서당 반납 1건 |
-| `fk_cards_holder` | corporate_cards | → card_users.id |
-| `fk_users_department` | card_users | → card_departments.id |
+| `uq_card_company_mapping` | card_company_mappings | 사용자-법인 매핑 유일성 |
 | `fk_checkout_card` | card_checkout_requests | → corporate_cards.id |
 | `fk_checkout_requester` | card_checkout_requests | → card_users.id |
 | `fk_checkout_approver` | card_checkout_requests | → card_users.id |
@@ -252,27 +255,22 @@ CREATE INDEX idx_finance_history_created ON finance.card_status_history(created_
 ## ER 다이어그램
 
 ```
-┌──────────────────────┐
-│  card_departments    │
-├──────────────────────┤
-│ * id (PK)            │
-│   name (UNIQUE)      │
-│   sort_order         │
-└──────────────────────┘
-         │ 1:N
-         ▼
-┌──────────────────────┐       ┌──────────────────────┐
-│  card_users          │       │  corporate_cards     │
-├──────────────────────┤       ├──────────────────────┤
-│ * id (PK)            │◄──┐   │ * id (PK)            │
-│   name               │   │   │   card_number (UQ)   │
-│   email (UNIQUE)     │   │   │   company             │
-│   company            │   │   │   status              │
-│   department_id (FK) │   └───│   current_holder_id   │
-│   is_admin           │       │   is_active           │
-└──────────────────────┘       └──────────────────────┘
-     │ 1:N                          │ 1:N
-     ▼                              ▼
+┌──────────────────────────┐
+│  card_company_mappings   │
+├──────────────────────────┤
+│ * id (PK)                │
+│   user_email             │   ┌──────────────────────┐
+│   company                │   │  corporate_cards     │
+│   created_by             │   ├──────────────────────┤
+│   UQ(user_email,company) │   │ * id (PK)            │
+└──────────────────────────┘   │   card_number (UQ)   │
+                               │   company             │
+                               │   status              │
+                               │   current_holder_email│
+                               │   is_active           │
+                               └──────────────────────┘
+                                    │ 1:N
+                                    ▼
 ┌────────────────────────────────────────────────┐
 │  card_checkout_requests                        │
 ├────────────────────────────────────────────────┤
@@ -444,7 +442,7 @@ WHERE request_number LIKE 'FC-' || TO_CHAR(NOW(), 'YYYYMMDD') || '%';
 - 불출 기안서: `pending` 상태에서만 삭제 가능 (soft delete 아님, 실제 삭제)
 - 반납 기안서: 삭제 불가 (반려 후 재작성)
 - 카드: `available` 상태에서만 삭제 가능 (비활성화 권장)
-- 부서: 소속 사용자 0명일 때만 삭제 가능
+- 법인 매핑: 자유 삭제 가능 (삭제 시 소속 법인 기본값으로 복원)
 - 사용자: 진행 중인 기안서가 없을 때만 삭제 가능
 
 ---
@@ -456,26 +454,17 @@ WHERE request_number LIKE 'FC-' || TO_CHAR(NOW(), 'YYYYMMDD') || '%';
 | `organization.users` | JWT email → `LOWER(u.email)` 매칭 | 로그인 사용자 식별 |
 | `organization.employees` | `users.employee_id` → `employees.id` | 직원-부서 연결 |
 | `organization.departments` | 재귀 CTE로 부서 트리 상향 탐색 (`type='company'`) | 사용자 소속 법인 조회 |
-| `organization.departments` | `card_departments.name` = `organization.departments.name` JOIN | 부서명 원본 조회, 부서 목록 조회 |
+| `finance.card_company_mappings` | `user_email` 매칭 → 매핑된 법인 목록 조회 | 사용자별 법인카드 노출 법인 오버라이드 |
 | `approval.documents` | `card_return_requests.document_number` | 전자결재 문서 외부 참조 (선택) |
 | jabis-storage (MinIO) | `card_receipts.file_path` | 영수증 파일 저장소 |
 
 > **법인 조회 방식**: `organization.users.email` → `employees.department_id` → 부서 트리를 `parent_id`로 상향 탐색하여 `type='company'`인 노드의 `name`을 법인명으로 사용한다. 재귀 CTE 사용, 이메일 비교는 `LOWER()` 대소문자 무시.
-> **참고**: `card_departments.name`으로 `organization.departments.name`과 매칭하여 부서명을 조회한다. API 응답의 부서명은 항상 `organization.departments`에서 가져온다.
+> **법인 매핑**: `card_company_mappings` 테이블에 매핑이 있으면 해당 법인의 카드를 노출하고, 없으면 소속 법인 기본값을 사용한다.
 > **인증**: card_users 기반 인증은 JWT roles 기반(`'finance'` 역할)으로 전환됨 (ADR-002).
 
 ---
 
 ## 시드 데이터
-
-### 부서 초기 데이터
-```sql
-INSERT INTO finance.card_departments (name, sort_order) VALUES
-  ('서비스본부', 1),
-  ('기획본부', 2),
-  ('AI본부', 3),
-  ('경영지원본부', 4);
-```
 
 ### 카드 초기 데이터
 ```sql
