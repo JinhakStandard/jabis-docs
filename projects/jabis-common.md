@@ -37,8 +37,8 @@ jabis-common/
 │       └── index.js
 ├── shared-pages/       # @jabis/shared-pages (공통 페이지 컴포넌트)
 │   └── src/
-│       ├── index.js          # 101개 export (페이지 25 + 컴포넌트 30+ + 스토어 10 + 유틸)
-│       ├── pages/            # 25개 공통 페이지 컴포넌트
+│       ├── index.js          # 103개 export (페이지 26 + 컴포넌트 30+ + 스토어 11 + 유틸)
+│       ├── pages/            # 26개 공통 페이지 컴포넌트
 │       │   ├── TodoPage.jsx             # 할일 관리
 │       │   ├── DocumentPage.jsx         # 문서 편집 (BlockNote)
 │       │   ├── GoalPage.jsx             # 목표 관리 (팀/부서/본부)
@@ -61,6 +61,7 @@ jabis-common/
 │       │   ├── VoucherPage.jsx          # 전표 관리
 │       │   ├── SitesPage.jsx            # 사이트 현황
 │       │   ├── ProjectPage.jsx          # 프로젝트 관리
+│       │   ├── AttendancePage.jsx        # 근태 관리 (출퇴근, 등록, 현황)
 │       │   ├── MyHRPage.jsx             # 나의 인사정보
 │       │   ├── AiWorkReportPage.jsx     # AI 업무 보고서
 │       │   └── AiTeamReportPage.jsx     # AI 팀 보고서
@@ -108,8 +109,9 @@ jabis-common/
 │       │   └── useApprovalPermissions.js      # 결재 권한 판단
 │       ├── utils/            # 유틸리티
 │       │   └── approvalDetailUtils.jsx        # 날짜/금액 포맷, 필드 렌더링
-│       ├── stores/           # Zustand 스토어 (10개) + API 클라이언트
+│       ├── stores/           # Zustand 스토어 (11개) + API 클라이언트
 │       │   ├── apiClient.js           # ★ 글로벌 API 클라이언트 (setSharedApiClient, apiGet, apiPost)
+│       │   ├── attendanceApi.js       # 근태 관리 API (apiClient 사용)
 │       │   ├── approvalStore.js       # 결재 문서 CRUD, 승인/반려, 참조자/관련문서
 │       │   ├── cardApi.js             # 법인카드 API (apiClient 사용)
 │       │   ├── documentStore.js       # 문서 CRUD
@@ -209,7 +211,7 @@ const getMenuItems = buildMenu('hr', (common) => [
 
 | 그룹 | 라벨 | 아이콘 | 포함 항목 |
 |------|------|--------|----------|
-| `common.work` | 업무 관리 | Briefcase | 할일, 문서작성, 목표관리, 일정, 전자결재, 법인카드 신청 |
+| `common.work` | 업무 관리 | Briefcase | 할일, 문서작성, 목표관리, 일정, 전자결재, 근태 관리, 법인카드 신청 |
 | `common.communication` | 소통 | MessageCircle | 메신저, 메일, 회의실 예약 |
 | `common.life` | 사내 생활 | Coffee | 트래져 블로그, 조식, 뉴스, 맛집, 추억 |
 | `common.organization` | 조직/관리 | Building2 | 조직 관리 |
@@ -347,11 +349,11 @@ import { TodoPage, DocumentPage, ApprovalPage } from '@jabis/shared-pages'
 <Route path="approval" element={<ApprovalPage role="developer" />} />
 ```
 
-### Export 구성 (101개)
+### Export 구성 (103개)
 
 | 카테고리 | 수량 | 주요 항목 |
 |---------|------|---------|
-| 페이지 (업무관리) | 7 | TodoPage, DocumentPage, GoalPage, SchedulePage, Approval 3종 |
+| 페이지 (업무관리) | 8 | TodoPage, DocumentPage, GoalPage, SchedulePage, Approval 3종, AttendancePage |
 | 페이지 (소통) | 3 | MessengerPage, MailPage, MeetingRoomPage |
 | 페이지 (사내생활) | 5 | TreasureBlogPage, BreakfastPage, NewsMonitoringPage, RestaurantPage, MemoryPage |
 | 페이지 (조직/관리) | 4 | OrganizationPage, UniversityPage, UniversityDetailPage, ReportPage |
@@ -360,7 +362,7 @@ import { TodoPage, DocumentPage, ApprovalPage } from '@jabis/shared-pages'
 | 컴포넌트 (문서) | 7 | BlockNoteEditor, DocumentEditor, Block, BlockMenu 등 |
 | 컴포넌트 (목표) | 5 | TeamTaskDialog, MemberGoalDialog 등 |
 | 컴포넌트 (조직) | 8 | OrgChartView, OrgTreeView, OrgTableView, DetailPanel 등 |
-| 스토어 | 10 | useApprovalStore, useDocumentStore 등 |
+| 스토어 | 11 | useApprovalStore, useDocumentStore, attendanceApi 등 |
 | 훅/유틸 | 6 | useApprovalPermissions, formatDate 등 |
 
 ## 프로젝트 고유 규칙

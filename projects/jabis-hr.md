@@ -29,6 +29,7 @@ jabis-hr/
 │       │   ├── components/
 │       │   ├── pages/
 │       │   │   ├── approval-admin/   # 전자결재 관리 (양식/카테고리)
+│       │   │   ├── HrAttendancePage.jsx  # HR 전용 전 직원 근태 관리
 │       │   │   ├── DashboardPage.jsx
 │       │   │   └── ComingSoonPage.jsx
 │       │   ├── stores/
@@ -105,6 +106,28 @@ jabis 메인 앱에 통합된 기능:
 - 카테고리 관리 (`/hr/approval-admin/forms/categories`)
 
 jabis-hr 독립 앱은 향후 추가 기능 개발 시 jabis 메인으로 순차 통합 예정.
+
+## 근태 관리 기능
+
+### 공통 근태 관리 (`/attendance`)
+
+`@jabis/shared-pages`의 `AttendancePage` 컴포넌트를 사용하는 일반 직원용 근태 관리 페이지.
+
+- **출퇴근 탭**: 실시간 시간 표시, GPS 기반 출퇴근 기록 (위도/경도/정확도)
+- **근태 등록 탭**: 연차/외근/출장 등 수동 등록 (과거 날짜만 허용)
+- **내 근태 현황 탭**: 기간별 근태 기록 조회, 통계 카드 (정상/지각/조퇴/결근)
+
+### 인사 근태 관리 (`/employee/attendance`)
+
+`HrAttendancePage.jsx` — HR 관리자 전용 전 직원 근태 관리 페이지.
+
+- **필터**: 기간 선택, 부서 필터, 상태 필터 (정상/지각/조퇴/결근/등록)
+- **통계 카드**: 총 근무일수, 정상출근율(%), 지각 건수, 결근 건수
+- **근태 테이블**: 이름, 부서, 날짜, 근태유형, 출근시간, 퇴근시간, 상태, 비고 (페이지네이션 20건/페이지)
+- **API**: `GET /api/attendance/admin` (필터링, 페이지네이션), `GET /api/attendance/stats` (통계)
+- **권한**: `hr` 또는 `superadmin` 역할 필수
+
+---
 
 ## 프로젝트 고유 규칙
 - jabis-{dept} 부서별 앱 패턴 준수
