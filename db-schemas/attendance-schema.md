@@ -19,6 +19,8 @@ organization.attendance_records        일별 근태 기록 (출퇴근 시간, G
     │ N:1
     ▼
 organization.employees                 직원 (부서 소속)
+
+organization.attendance_zones          근태 영역 (출근 허용 구역, GPS 반경)
 ```
 
 ---
@@ -138,6 +140,50 @@ CREATE TABLE IF NOT EXISTS organization.attendance_records (
 
 ---
 
+### 3. organization.attendance_zones (근태 영역)
+
+출근 허용 구역을 정의하는 테이블. 활성 영역이 1개 이상 등록되면 GPS 반경 검증이 활성화됨.
+
+| 컬럼 | 타입 | 제약 | 기본값 | 설명 |
+|------|------|------|--------|------|
+| `id` | VARCHAR(50) | PK | - | 영역 ID (UUID) |
+| `name` | TEXT | NOT NULL | - | 영역명 (예: 본사, 분당 사무실) |
+| `latitude` | NUMERIC(10,7) | NOT NULL | - | 중심점 위도 |
+| `longitude` | NUMERIC(10,7) | NOT NULL | - | 중심점 경도 |
+| `radius_meters` | INTEGER | NOT NULL | `200` | 반경 (미터, 50~5000) |
+| `is_active` | BOOLEAN | NOT NULL | `TRUE` | 활성화 여부 |
+| `description` | TEXT | - | NULL | 설명 |
+| `created_by` | TEXT | - | NULL | 등록자 employee_id |
+| `created_at` | TIMESTAMPTZ | NOT NULL | `NOW()` | 생성일 |
+| `updated_at` | TIMESTAMPTZ | NOT NULL | `NOW()` | 수정일 |
+
+#### DDL
+
+```sql
+CREATE TABLE IF NOT EXISTS organization.attendance_zones (
+  id            VARCHAR(50) PRIMARY KEY,
+  name          TEXT NOT NULL,
+  latitude      NUMERIC(10,7) NOT NULL,
+  longitude     NUMERIC(10,7) NOT NULL,
+  radius_meters INTEGER NOT NULL DEFAULT 200,
+  is_active     BOOLEAN NOT NULL DEFAULT TRUE,
+  description   TEXT,
+  created_by    TEXT,
+  created_at    TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at    TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+```
+
+#### GPS 검증 로직
+
+- 활성 영역이 0개 → GPS 검증 없음 (자유 출근)
+- 활성 영역이 1개 이상 → 출근 시 Haversine 공식으로 거리 계산
+- 등록된 영역 중 하나라도 반경 내 → 출근 허용
+- 모든 영역 밖 → `OUT_OF_ZONE` 에러 (403)
+- GPS 좌표 없음 → `GPS_REQUIRED` 에러 (400)
+
+---
+
 ## 인덱스
 
 | 인덱스 | 테이블 | 컬럼 | 용도 |
@@ -147,6 +193,7 @@ CREATE TABLE IF NOT EXISTS organization.attendance_records (
 | `idx_att_records_status` | attendance_records | `status` | 상태별 필터링 |
 | `idx_att_records_employee_date` | attendance_records | `employee_id, date` | 직원+날짜 복합 조회 (UNIQUE 인덱스) |
 | `idx_att_types_active` | attendance_types | `is_active, sort_order` | 활성 유형 정렬 조회 |
+| `idx_att_zones_active` | attendance_zones | `is_active` | 활성 영역 조회 |
 
 ---
 

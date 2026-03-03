@@ -384,19 +384,97 @@ GPS 좌표와 함께 출근을 기록합니다. KST 09:00 기준으로 `normal`/
 
 ---
 
+## 7. GET /api/attendance/zones
+
+> **HR 전용**: `hr` 또는 `superadmin` 역할 필수
+
+근태 영역(출근 허용 구역) 목록을 조회합니다.
+
+**Query Parameters**
+
+| 파라미터 | 타입 | 필수 | 기본값 | 설명 |
+|----------|------|------|--------|------|
+| `includeInactive` | string | N | `"false"` | `"true"`이면 비활성 영역도 포함 |
+
+**응답: `200 OK`**
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "id": "550e8400-...",
+      "name": "본사",
+      "latitude": 37.5726545,
+      "longitude": 126.9701371,
+      "radiusMeters": 200,
+      "isActive": true,
+      "description": "본사 사무실 (서울)",
+      "createdBy": "emp-001",
+      "createdAt": "2026-03-03T00:00:00.000Z",
+      "updatedAt": "2026-03-03T00:00:00.000Z"
+    }
+  ]
+}
+```
+
+---
+
+## 8. POST /api/attendance/zones
+
+> **HR 전용**: `hr` 또는 `superadmin` 역할 필수
+
+근태 영역 CRUD. `action` 필드로 동작을 구분합니다.
+
+### action: create
+
+```json
+{ "action": "create", "name": "본사", "latitude": 37.5726545, "longitude": 126.9701371, "radiusMeters": 200, "description": "본사 사무실" }
+```
+
+| 필드 | 타입 | 필수 | 설명 |
+|------|------|------|------|
+| `name` | string | O | 영역 이름 |
+| `latitude` | number | O | 위도 (-90~90) |
+| `longitude` | number | O | 경도 (-180~180) |
+| `radiusMeters` | number | N | 반경 (기본 200m, 50~5000m) |
+| `description` | string | N | 설명 |
+
+### action: update
+
+```json
+{ "action": "update", "id": "uuid-xxx", "name": "본사 (수정)", "latitude": 37.5726545, "longitude": 126.9701371, "radiusMeters": 300 }
+```
+
+### action: toggle
+
+```json
+{ "action": "toggle", "id": "uuid-xxx", "isActive": false }
+```
+
+### action: delete
+
+```json
+{ "action": "delete", "id": "uuid-xxx" }
+```
+
+---
+
 ## 에러 응답
 
 | 코드 | HTTP | 설명 |
 |------|------|------|
 | `UNAUTHORIZED` | 401 | JWT 토큰 없거나 무효 |
 | `NO_EMPLOYEE` | 403 | 직원 정보가 연결되지 않음 (users.employeeId 없음) |
-| `FORBIDDEN` | 403 | HR 관리자 권한 필요 (admin, stats 엔드포인트) |
+| `FORBIDDEN` | 403 | HR 관리자 권한 필요 (admin, stats, zones 엔드포인트) |
 | `INVALID_REQUEST` | 400 | 필수 파라미터 누락 (startDate, endDate, action 등) |
 | `INVALID_ACTION` | 400 | 알 수 없는 action 값 |
 | `FUTURE_DATE` | 400 | 미래 날짜에 근태 등록 시도 |
 | `ALREADY_CLOCKED_IN` | 409 | 이미 오늘 출근 기록 존재 |
 | `ALREADY_CLOCKED_OUT` | 409 | 이미 퇴근 처리됨 |
 | `NO_CLOCK_IN` | 400 | 오늘 출근 기록 없이 퇴근 시도 |
+| `GPS_REQUIRED` | 400 | 근태 영역 활성화 상태에서 GPS 좌표 없음 |
+| `OUT_OF_ZONE` | 403 | 등록된 출근 영역 밖에서 출근 시도 |
+| `ZONE_NOT_FOUND` | 404 | 해당 영역 ID를 찾을 수 없음 |
 | `INTERNAL_ERROR` | 500 | 서버 내부 오류 |
 
 ---
@@ -411,3 +489,5 @@ GPS 좌표와 함께 출근을 기록합니다. KST 09:00 기준으로 `normal`/
 | GET | `/api/attendance` | 내 근태 기간 조회 | 인증 필수 |
 | GET | `/api/attendance/admin` | HR 관리자 근태 조회 | hr / superadmin |
 | GET | `/api/attendance/stats` | 근태 통계 | hr / superadmin |
+| GET | `/api/attendance/zones` | 근태 영역 목록 | hr / superadmin |
+| POST | `/api/attendance/zones` | 근태 영역 CRUD (action 기반) | hr / superadmin |
