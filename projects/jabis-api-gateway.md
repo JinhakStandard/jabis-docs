@@ -23,11 +23,13 @@ src/
 ├── app.ts                 # Fastify 설정
 ├── routes/
 │   ├── api.ts             # API 엔드포인트 라우트 (와일드카드)
+│   ├── access-logs.ts     # API 접근 로그 조회 라우트
 │   ├── organization.ts    # 조직도 + 권한 관리 API
 │   └── health.ts
 ├── services/
 │   ├── queryService.ts    # SQL 쿼리 실행 + 파라미터 검증
 │   ├── certService.ts     # jabis-cert 인증 검증
+│   ├── logService.ts      # API 접근 로그 기록 서비스
 │   ├── organizationService.ts  # 조직 관리 비즈니스 로직
 │   └── cacheService.ts    # Redis 캐싱
 ├── controllers/
@@ -37,6 +39,7 @@ src/
 │   └── errorHandler.ts
 ├── repositories/
 │   ├── endpointRepository.ts
+│   ├── logRepository.ts          # API 접근 로그 DB 접근
 │   └── organizationRepository.ts  # 조직 관리 DB 접근
 ├── types/
 │   └── organization.ts    # 조직 관리 타입 정의
@@ -45,6 +48,7 @@ src/
 │   └── migrate.js
 ├── docs/openapi/          # OpenAPI 스펙
 └── sql/
+    ├── gateway-schema.sql          # Gateway 스키마 (api_endpoints, api_access_logs, api_tasks 등)
     ├── organization-schema.sql     # 조직 DB 스키마
     ├── organization-seed.sql       # 개발용 시드 데이터
     ├── organization-seed-real.sql  # 실제 조직도 데이터 (57부서, 202명)
@@ -142,6 +146,35 @@ certService.introspect() 실패
   → ServiceUnavailableError('Authentication service', 원인 메시지)
   → 503 { error: { code: 'service_unavailable', message: '...', details: '원인' } }
 ```
+
+## API 접근 로그 (Access Logs)
+
+API Gateway를 통과하는 모든 요청을 자동 기록하고 조회하는 시스템.
+
+### API 엔드포인트
+- `GET /api/access-logs` — 접근 로그 목록 조회 (페이지네이션, 필터링)
+- `GET /api/access-logs/:requestId` — 단건 로그 조회
+
+### 허용 역할
+`producer`, `developer`, `admin`, `superadmin`
+
+### DB 스키마
+- 테이블: `gateway.api_access_logs`
+- DDL: `sql/gateway-schema.sql`
+- 상세: [db-schemas/gateway-schema.md](../db-schemas/gateway-schema.md)
+- API 상세: [api-specs/access-logs-api.md](../api-specs/access-logs-api.md)
+
+### 로그 기록 흐름
+1. API 요청 → Fastify onResponse hook → `logService.saveAccessLog()`
+2. `logRepository.createAsync()` — 비동기 INSERT (응답 블로킹 방지)
+3. INSERT 실패 시 warn 로그만 남기고 무시 (서비스 가용성 우선)
+
+### 주의사항
+- `gateway.api_access_logs` 테이블은 **수동 DDL 실행 필요** (자동 마이그레이션 없음)
+- 테이블 미생성 시: 로그 기록 조용히 실패 + 조회 API 500 에러 (INTERNAL_ERROR)
+- jabis-producer의 API 로그 페이지는 미연동 시 데모 데이터 fallback 표시
+
+---
 
 ## 조직 관리 시스템 (Organization)
 
