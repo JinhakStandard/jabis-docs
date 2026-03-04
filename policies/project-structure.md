@@ -115,14 +115,81 @@ jabis-{role}/
 
 ### 2.3 새 dept 프로젝트 생성 체크리스트
 
-- [ ] `jabis-{role}/` 디렉토리 생성
-- [ ] `.gitmodules`에 jabis-common submodule 등록
-- [ ] `pnpm-workspace.yaml` 작성 (6개 공유 패키지 + apps/*)
-- [ ] `apps/{role}/` 앱 생성
-- [ ] `dist -> apps/{role}/dist` 심볼릭 링크 생성
-- [ ] Dockerfile, bitbucket-pipelines.yml 작성
-- [ ] `.env.preview`, `.env.production` 환경변수 설정
-- [ ] jabis-docs/projects/jabis-{role}.md 문서 작성
+#### Phase 1: 저장소 & 프로젝트 구조
+
+- [ ] **Bitbucket에 `jabis-{role}` 저장소 생성**
+- [ ] `jabis-{role}/` 로컬 디렉토리 생성, `git init`
+- [ ] `.gitmodules`에 jabis-common submodule 등록 (`packages` 경로)
+- [ ] `pnpm-workspace.yaml` 작성 (6개 공유 패키지 + `apps/*`)
+- [ ] `apps/{role}/` 앱 생성 (App.jsx, main.jsx, pages/, vite.config.js 등)
+- [ ] `dist -> apps/{role}/dist` **심볼릭 링크 생성** (없으면 미리보기 불가)
+- [ ] Dockerfile 작성 (jabis-hr 참고, serve -s dist -l 3000)
+- [ ] bitbucket-pipelines.yml 작성 (Harbor push → Helm update)
+
+#### Phase 2: 환경변수 & OAuth
+
+- [ ] `.env.local` — 개발용 (`VITE_OAUTH_ENABLED=false`)
+- [ ] `.env.preview` — 미리보기용 (`VITE_DEV_TOKEN` 포함)
+- [ ] `.env.production` — 운영용 OAuth 설정:
+  - `VITE_OAUTH_CLIENT_ID` / `VITE_OAUTH_CLIENT_SECRET` = **jabis 메인과 동일** (jabis/.env.production 참조)
+  - `VITE_OAUTH_REDIRECT_URI` = `https://jabis.jinhakapply.com/{role}/auth/callback`
+  - `VITE_GATEWAY_URL` = `https://jabis-gateway.jinhakapply.com`
+
+#### Phase 3: @jabis/menu 역할 매핑
+
+- [ ] **`jabis-common/menu/src/roles.js`의 `ROLE_URL_MAP`에 추가**:
+  ```javascript
+  export const ROLE_URL_MAP = {
+    // ... 기존 매핑 ...
+    {role}: '/{role}/',    // ← 새 역할 추가
+  }
+  ```
+  이 설정이 있어야 다른 앱에서 역할 전환 시 `window.location.href = getRoleUrl('{role}')` → `'/{role}/'`로 이동
+- [ ] jabis-common 커밋/push 후 **모든 소비 프로젝트 submodule 동기화** (jabis-lab, jabis-template 제외)
+
+#### Phase 4: K3S Helm 배포 설정 (jabis-helm)
+
+- [ ] **`prod-applications-values.yaml`에 앱 추가**:
+  ```yaml
+  "jabis-{role}":
+    enabled: true
+    replicaCount: 1
+    image:
+      repository: "harbor-apply.jinhaksa.com/jabis/jabis-{role}"
+      tag: v1.0.0-prod.1
+      pullPolicy: IfNotPresent
+      containerPort: 3000
+    service:
+      type: ClusterIP
+      port: 3000
+  ```
+- [ ] **`prod-ingress-values.yaml`에 경로 추가** (`jabis.jinhakapply.com` 호스트 하위):
+  ```yaml
+  - path: "/{role}"
+    pathType: Prefix
+    serviceName: "jabis-{role}"
+    servicePort: 3000
+  ```
+  **주의**: catch-all `/` 경로(jabis 메인) **위에** 배치해야 함
+
+#### Phase 5: 문서 & CLAUDE.md
+
+- [ ] `jabis-docs/projects/jabis-{role}.md` 프로젝트 문서 작성
+- [ ] `CLAUDE.md` 프로젝트 테이블에 jabis-{role} 추가
+- [ ] `Projects/CLAUDE.md` 빌드 명령 테이블에 추가
+
+#### 배포 순서 (중요)
+
+```
+1. jabis-{role} 프로젝트 완성 → 초기 커밋 → Bitbucket push
+   (Pipeline이 Docker 이미지 빌드 → Harbor push)
+2. jabis-helm 변경사항 커밋 → push
+   (Pipeline이 Helm upgrade → K3S에 ingress + deployment 반영)
+3. jabis-common ROLE_URL_MAP 변경 → push → 소비 프로젝트 submodule 동기화 → push
+   (이 시점부터 다른 앱에서 역할 전환 시 새 앱으로 이동)
+```
+
+순서를 바꾸면: Helm 먼저 → 이미지 없어서 Pod CrashLoop / ROLE_URL_MAP 먼저 → 역할 전환 시 404
 
 ---
 
