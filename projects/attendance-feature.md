@@ -260,7 +260,59 @@ HR 관리자가 출근 허용 영역(사무실 좌표 + 반경)을 등록하고,
 
 ---
 
-## 8. 후속 작업 (미완료)
+## 8. Kakao Maps 출근 지도 다이얼로그 (2026-03-04 추가)
+
+### 8.1 개요
+
+출근 버튼 클릭 시 Kakao Maps 지도 다이얼로그를 표시하여, 현재 위치와 등록된 근태 영역을 시각적으로 보여주는 기능. 출근 가능 여부를 지도 위에서 직관적으로 확인할 수 있다.
+
+### 8.2 동작 흐름
+
+```
+출근하기 클릭
+  → GPS 위치 + 활성 영역 동시 요청
+  → 영역 0개: 바로 출근 처리 (기존 동작)
+  → 영역 1개 이상: 지도 다이얼로그 표시
+    → 반경 내: 초록색 "출근 가능 지역입니다" + 출근 확인 버튼 활성
+    → 반경 밖: 빨간색 "출근 가능 지역이 아닙니다" + 가장 가까운 영역까지 거리 표시 + 버튼 비활성
+```
+
+### 8.3 프론트엔드 컴포넌트
+
+#### ClockInMapDialog.jsx (jabis-common/shared-pages)
+
+- **Kakao Maps SDK 동적 로딩**: `<script>` 태그로 `//dapi.kakao.com/v2/maps/sdk.js` 로드
+- **환경변수**: `VITE_KAKAO_MAP_KEY` — Kakao Developers JavaScript 키
+- **Haversine 거리 계산**: 프론트엔드에서도 거리를 계산하여 UI 표시
+- **지도 요소**:
+  - 현재 위치: 파란색 마커 + "내 위치" 라벨
+  - 근태 영역: Circle (반경 시각화) + CustomOverlay (영역 이름)
+  - 영역 내: 초록색 원, 영역 밖: 회색 원
+- **Props**: `open`, `onOpenChange`, `latitude`, `longitude`, `zones`, `onConfirmClockIn`, `loading`
+
+#### AttendancePage.jsx ClockTab 변경사항
+
+- `handleClockInClick`: GPS + `getActiveZones()` 동시 호출 → 영역 유무에 따라 분기
+- `handleConfirmClockIn`: 지도 다이얼로그에서 확인 클릭 → 실제 출근 API 호출
+- **근무시간 타이머**: 출근 후 실시간 `X시간 Y분` 표시 (1초마다 갱신)
+- **퇴근 버튼 활성화**: 출근 상태(clockInAt 존재 + clockOutAt 없음)에서만 퇴근 가능
+
+### 8.4 Kakao Maps 설정
+
+- **API 키 종류**: JavaScript 키 (REST API 키 아님)
+- **등록된 도메인**: `localhost`, `jabis-maker.ngrok-free.dev`, `jabis.jinhakapply.com`
+- **환경변수 이름**: `VITE_KAKAO_MAP_KEY`
+- **적용 프로젝트**: jabis, jabis-hr, jabis-dev, jabis-producer, jabis-finance, jabis-design-system
+- **SDK URL**: `//dapi.kakao.com/v2/maps/sdk.js?appkey={KEY}&autoload=false`
+
+### 8.5 API 엔드포인트
+
+- `GET /api/attendance/zones/active` — 활성 영역 목록 (인증 필수, HR 권한 불필요)
+- 상세: `jabis-docs/api-specs/attendance-api.md` 7절
+
+---
+
+## 9. 후속 작업 (미완료)
 
 - [ ] 운영 배포 후 E2E 테스트 실행 (ai-e2e-tester)
 - [ ] GPS 출퇴근 모바일 환경 테스트

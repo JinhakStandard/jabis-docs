@@ -384,7 +384,39 @@ GPS 좌표와 함께 출근을 기록합니다. KST 09:00 기준으로 `normal`/
 
 ---
 
-## 7. GET /api/attendance/zones
+## 7. GET /api/attendance/zones/active
+
+활성 상태인 근태 영역 목록을 조회합니다. **HR 권한 불필요** — 모든 인증된 사용자가 접근 가능.
+프론트엔드에서 출근 시 Kakao Maps 다이얼로그에 영역을 표시할 때 사용합니다.
+
+**파라미터**: 없음
+
+**응답: `200 OK`**
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "id": "550e8400-...",
+      "name": "본사",
+      "latitude": 37.5726545,
+      "longitude": 126.9701371,
+      "radiusMeters": 200,
+      "isActive": true,
+      "description": "본사 사무실 (서울)",
+      "createdBy": "emp-001",
+      "createdAt": "2026-03-03T00:00:00.000Z",
+      "updatedAt": "2026-03-03T00:00:00.000Z"
+    }
+  ]
+}
+```
+
+> **참고**: 비활성 영역은 반환하지 않음. HR 관리자가 전체 목록(비활성 포함)을 조회하려면 `GET /api/attendance/zones`를 사용.
+
+---
+
+## 8. GET /api/attendance/zones
 
 > **HR 전용**: `hr` 또는 `superadmin` 역할 필수
 
@@ -419,7 +451,7 @@ GPS 좌표와 함께 출근을 기록합니다. KST 09:00 기준으로 `normal`/
 
 ---
 
-## 8. POST /api/attendance/zones
+## 9. POST /api/attendance/zones
 
 > **HR 전용**: `hr` 또는 `superadmin` 역할 필수
 
@@ -489,5 +521,6 @@ GPS 좌표와 함께 출근을 기록합니다. KST 09:00 기준으로 `normal`/
 | GET | `/api/attendance` | 내 근태 기간 조회 | 인증 필수 |
 | GET | `/api/attendance/admin` | HR 관리자 근태 조회 | hr / superadmin |
 | GET | `/api/attendance/stats` | 근태 통계 | hr / superadmin |
-| GET | `/api/attendance/zones` | 근태 영역 목록 | hr / superadmin |
+| GET | `/api/attendance/zones/active` | 활성 근태 영역 목록 | 인증 필수 |
+| GET | `/api/attendance/zones` | 근태 영역 목록 (전체) | hr / superadmin |
 | POST | `/api/attendance/zones` | 근태 영역 CRUD (action 기반) | hr / superadmin |
