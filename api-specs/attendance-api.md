@@ -491,6 +491,186 @@ GPS 좌표와 함께 출근을 기록합니다. KST 09:00 기준으로 `normal`/
 
 ---
 
+## 10. POST /api/attendance/requests
+
+근태 요청(휴가 신청, 시간 수정 요청, 취소)을 처리합니다. `action` 필드로 동작을 구분합니다.
+
+### action: create-leave (휴가 신청)
+
+```json
+{
+  "action": "create-leave",
+  "leaveDate": "2026-03-10",
+  "leaveTypeId": "annual-leave",
+  "leaveNote": "개인 사유"
+}
+```
+
+| 필드 | 타입 | 필수 | 설명 |
+|------|------|------|------|
+| `action` | string | O | `"create-leave"` |
+| `leaveDate` | string | O | 휴가 날짜 (YYYY-MM-DD) |
+| `leaveTypeId` | string | O | 휴가 유형 ID (requires_approval=true인 유형만) |
+| `leaveNote` | string | N | 휴가 사유 |
+
+**에러**:
+- `400 INVALID_REQUEST` — 필수 파라미터 누락
+- `400 INVALID_TYPE` — 존재하지 않는 근태 유형
+- `400 NO_APPROVAL_NEEDED` — 승인 불필요한 유형 (register 사용)
+
+### action: create-time-modify (시간 수정 요청)
+
+```json
+{
+  "action": "create-time-modify",
+  "attendanceRecordId": "uuid-xxx",
+  "targetDate": "2026-03-03",
+  "originalClockIn": "2026-03-03T00:05:00.000Z",
+  "requestedClockIn": "2026-03-02T23:55:00.000Z",
+  "originalClockOut": null,
+  "requestedClockOut": null,
+  "modifyReason": "실제 출근 시간과 기록이 다름"
+}
+```
+
+| 필드 | 타입 | 필수 | 설명 |
+|------|------|------|------|
+| `action` | string | O | `"create-time-modify"` |
+| `attendanceRecordId` | string | O | 수정할 근태 기록 ID |
+| `targetDate` | string | O | 수정 대상 날짜 |
+| `originalClockIn` | string | N | 기존 출근 시각 |
+| `requestedClockIn` | string | N | 요청 출근 시각 |
+| `originalClockOut` | string | N | 기존 퇴근 시각 |
+| `requestedClockOut` | string | N | 요청 퇴근 시각 |
+| `modifyReason` | string | O | 수정 사유 |
+
+**에러**: `400 INVALID_REQUEST` — 필수 파라미터 누락, 수정 시간 없음
+
+### action: cancel (요청 취소)
+
+```json
+{ "action": "cancel", "requestId": "uuid-xxx" }
+```
+
+**에러**:
+- `404 REQUEST_NOT_FOUND`
+- `403 FORBIDDEN` — 본인 요청만 취소 가능
+
+---
+
+## 11. GET /api/attendance/requests
+
+내 근태 요청 목록을 조회합니다.
+
+**Query Parameters**
+
+| 파라미터 | 타입 | 필수 | 기본값 | 설명 |
+|----------|------|------|--------|------|
+| `requestType` | string | N | - | `leave` \| `time_modify` |
+| `status` | string | N | - | `pending` \| `approved` \| `rejected` |
+| `limit` | number | N | `20` | 페이지 크기 |
+| `offset` | number | N | `0` | 시작 위치 |
+
+**응답: `200 OK`**
+```json
+{
+  "success": true,
+  "data": {
+    "items": [
+      {
+        "id": "uuid-xxx",
+        "employeeId": "emp-001",
+        "requestType": "leave",
+        "leaveDate": "2026-03-10",
+        "leaveTypeId": "annual-leave",
+        "leaveTypeName": "연차",
+        "leaveNote": "개인 사유",
+        "status": "pending",
+        "createdAt": "2026-03-05T00:00:00.000Z",
+        "updatedAt": "2026-03-05T00:00:00.000Z"
+      }
+    ],
+    "total": 5
+  }
+}
+```
+
+---
+
+## 12. GET /api/attendance/requests/team
+
+팀장 전용: 같은 부서 팀원의 근태 요청 목록을 조회합니다.
+팀장의 `department_id`와 동일한 부서 소속 직원의 요청만 반환합니다.
+
+**Query Parameters**: 11번과 동일
+
+**응답: `200 OK`**
+```json
+{
+  "success": true,
+  "data": {
+    "items": [
+      {
+        "id": "uuid-xxx",
+        "employeeId": "emp-002",
+        "employeeName": "홍길동",
+        "departmentName": "개발1팀",
+        "requestType": "leave",
+        "leaveDate": "2026-03-10",
+        "leaveTypeId": "annual-leave",
+        "leaveTypeName": "연차",
+        "leaveNote": "개인 사유",
+        "status": "pending",
+        "createdAt": "2026-03-05T00:00:00.000Z"
+      }
+    ],
+    "total": 3
+  }
+}
+```
+
+**추가 필드** (TeamAttendanceRequest):
+
+| 필드 | 타입 | 설명 |
+|------|------|------|
+| `employeeName` | string | 요청자 이름 |
+| `departmentName` | string \| null | 부서명 |
+
+---
+
+## 13. POST /api/attendance/requests/:id/approve
+
+팀장 전용: 근태 요청을 승인 또는 반려합니다. `action` 필드로 구분.
+
+### action: approve
+
+```json
+{ "action": "approve", "comment": "승인합니다" }
+```
+
+### action: reject
+
+```json
+{ "action": "reject", "comment": "일정 조정 필요" }
+```
+
+| 필드 | 타입 | 필수 | 설명 |
+|------|------|------|------|
+| `action` | string | O | `"approve"` \| `"reject"` |
+| `comment` | string | N | 승인/반려 의견 |
+
+**응답: `200 OK`** — 업데이트된 AttendanceRequest 객체
+
+**승인 후처리**:
+- **휴가** → `attendance_records`에 UPSERT (`status = 'registered'`)
+- **시간 수정** → `attendance_records`의 `clock_in_at`/`clock_out_at` 업데이트
+
+**에러**:
+- `404 REQUEST_NOT_FOUND`
+- `400 ALREADY_PROCESSED` — 이미 처리된 요청
+
+---
+
 ## 에러 응답
 
 | 코드 | HTTP | 설명 |
@@ -507,6 +687,11 @@ GPS 좌표와 함께 출근을 기록합니다. KST 09:00 기준으로 `normal`/
 | `GPS_REQUIRED` | 400 | 근태 영역 활성화 상태에서 GPS 좌표 없음 |
 | `OUT_OF_ZONE` | 403 | 등록된 출근 영역 밖에서 출근 시도 |
 | `ZONE_NOT_FOUND` | 404 | 해당 영역 ID를 찾을 수 없음 |
+| `INVALID_TYPE` | 400 | 존재하지 않는 근태 유형 |
+| `NO_APPROVAL_NEEDED` | 400 | 승인 불필요한 유형 (register 사용) |
+| `REQUEST_NOT_FOUND` | 404 | 해당 근태 요청을 찾을 수 없음 |
+| `ALREADY_PROCESSED` | 400 | 이미 처리된 요청 |
+| `NO_DEPARTMENT` | 400 | 부서 정보 없음 (팀 요청 조회 시) |
 | `INTERNAL_ERROR` | 500 | 서버 내부 오류 |
 
 ---
@@ -524,3 +709,7 @@ GPS 좌표와 함께 출근을 기록합니다. KST 09:00 기준으로 `normal`/
 | GET | `/api/attendance/zones/active` | 활성 근태 영역 목록 | 인증 필수 |
 | GET | `/api/attendance/zones` | 근태 영역 목록 (전체) | hr / superadmin |
 | POST | `/api/attendance/zones` | 근태 영역 CRUD (action 기반) | hr / superadmin |
+| POST | `/api/attendance/requests` | 근태 요청 (휴가/시간수정/취소) | 인증 필수 |
+| GET | `/api/attendance/requests` | 내 근태 요청 목록 | 인증 필수 |
+| GET | `/api/attendance/requests/team` | 팀원 근태 요청 목록 | 팀장 (부서 기준) |
+| POST | `/api/attendance/requests/:id/approve` | 근태 요청 승인/반려 | 인증 필수 |

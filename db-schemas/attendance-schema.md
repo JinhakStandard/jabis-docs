@@ -231,6 +231,76 @@ attendance_records (근태 기록)
 
 ---
 
+## 4. organization.attendance_requests (근태 요청)
+
+팀원이 휴가 신청 또는 출퇴근 시간 수정을 요청하면 이 테이블에 저장됩니다.
+팀장이 승인/반려 처리합니다.
+
+| 컬럼 | 타입 | 제약 | 기본값 | 설명 |
+|------|------|------|--------|------|
+| `id` | UUID | PK | `gen_random_uuid()` | 요청 ID |
+| `employee_id` | TEXT | FK → employees(id), NOT NULL | - | 요청자 직원 ID |
+| `request_type` | TEXT | NOT NULL | - | 요청 유형 (`leave` \| `time_modify`) |
+| `leave_date` | DATE | - | NULL | 휴가 날짜 (leave일 때) |
+| `leave_type_id` | VARCHAR(30) | FK → attendance_types(id) | NULL | 휴가 유형 ID |
+| `leave_note` | TEXT | - | NULL | 휴가 사유 |
+| `attendance_record_id` | VARCHAR(50) | FK → attendance_records(id) | NULL | 수정 대상 근태 기록 ID (time_modify일 때) |
+| `target_date` | DATE | - | NULL | 수정 대상 날짜 (time_modify일 때) |
+| `original_clock_in` | TIMESTAMPTZ | - | NULL | 기존 출근 시각 |
+| `requested_clock_in` | TIMESTAMPTZ | - | NULL | 요청 출근 시각 |
+| `original_clock_out` | TIMESTAMPTZ | - | NULL | 기존 퇴근 시각 |
+| `requested_clock_out` | TIMESTAMPTZ | - | NULL | 요청 퇴근 시각 |
+| `modify_reason` | TEXT | - | NULL | 수정 사유 |
+| `status` | TEXT | NOT NULL | `'pending'` | 상태 (`pending` \| `approved` \| `rejected`) |
+| `approved_by` | TEXT | FK → employees(id) | NULL | 승인/반려한 직원 ID |
+| `approved_at` | TIMESTAMPTZ | - | NULL | 승인/반려 시각 |
+| `approval_comment` | TEXT | - | NULL | 승인/반려 의견 |
+| `created_at` | TIMESTAMPTZ | NOT NULL | `NOW()` | 생성일 |
+| `updated_at` | TIMESTAMPTZ | NOT NULL | `NOW()` | 수정일 |
+
+**UNIQUE 제약**: `(employee_id, leave_date, leave_type_id)` WHERE `request_type = 'leave' AND status = 'pending'` — 동일 날짜/유형 중복 휴가 신청 방지
+
+#### DDL
+
+```sql
+CREATE TABLE IF NOT EXISTS organization.attendance_requests (
+  id                    UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  employee_id           TEXT NOT NULL REFERENCES organization.employees(id),
+  request_type          TEXT NOT NULL,
+  leave_date            DATE,
+  leave_type_id         VARCHAR(30) REFERENCES organization.attendance_types(id),
+  leave_note            TEXT,
+  attendance_record_id  VARCHAR(50) REFERENCES organization.attendance_records(id),
+  target_date           DATE,
+  original_clock_in     TIMESTAMPTZ,
+  requested_clock_in    TIMESTAMPTZ,
+  original_clock_out    TIMESTAMPTZ,
+  requested_clock_out   TIMESTAMPTZ,
+  modify_reason         TEXT,
+  status                TEXT NOT NULL DEFAULT 'pending',
+  approved_by           TEXT REFERENCES organization.employees(id),
+  approved_at           TIMESTAMPTZ,
+  approval_comment      TEXT,
+  created_at            TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at            TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX idx_att_requests_employee ON organization.attendance_requests(employee_id);
+CREATE INDEX idx_att_requests_status ON organization.attendance_requests(status);
+CREATE INDEX idx_att_requests_type ON organization.attendance_requests(request_type);
+
+CREATE UNIQUE INDEX idx_att_requests_leave_unique
+ON organization.attendance_requests(employee_id, leave_date, leave_type_id)
+WHERE request_type = 'leave' AND status = 'pending';
+```
+
+#### 승인 후처리
+
+- **휴가 승인** → `attendance_records`에 UPSERT (status='registered')
+- **시간 수정 승인** → `attendance_records`의 `clock_in_at`/`clock_out_at` 업데이트
+
+---
+
 ## 운영 정책
 
 - **DDL 관리**: DBA가 수동 SQL 스크립트로 실행 (앱에서 자동 DDL 실행 금지)
