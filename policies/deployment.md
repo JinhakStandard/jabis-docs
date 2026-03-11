@@ -200,7 +200,7 @@ cd ../jabis && git push
 
 | 항목 | 개발 | 운영 |
 |------|------|------|
-| Host | postgresql-helm.database-dev | postgresql-helm.database |
+| Host | postgresql-helm.jabis-dev | postgresql-helm.jabis-prod |
 | Port | 5432 | 5432 |
 | Database | jabis | jabis |
 | User | jabis_admin | jabis_admin |
