@@ -200,5 +200,6 @@ npm run pm2:status        # 상태 확인
 | 문서 | 설명 |
 |------|------|
 | `policies/night-mode.md` | 나이트모드 실행 정책 (프로그래밍 방식 제출 포함) |
+| `policies/concurrent-sessions.md` | 동시 작업 세션 정책 (세션 디렉토리 격리, 머지 충돌 처리) |
 | `policies/deployment.md` | 배포 정책 (push=배포, 30초 간격) |
 | `projects/jabis-night-builder.md` | jabis-night-builder (별도 시스템 — 폴링 기반 자동 빌더) |
