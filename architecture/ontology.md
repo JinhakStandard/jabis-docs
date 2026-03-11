@@ -7,7 +7,7 @@
 
 ## 1. JABIS란?
 
-**JABIS** (Jinhak Business Integration System) — 진학어플라이의 엔터프라이즈급 통합 업무 시스템.
+**JABIS** (Jinhak AI Based Integration System) — 진학어플라이의 엔터프라이즈급 통합 업무 시스템.
 
 - 20+ 개의 상호 연결된 프로젝트로 구성
 - 마이크로서비스 아키텍처 (K3S 기반)
@@ -345,7 +345,7 @@ import { buildMenu } from '@jabis/menu'
 
 | 용어 | 정의 |
 |------|------|
-| **JABIS** | Jinhak Business Integration System. 진학어플라이 통합 업무 시스템 |
+| **JABIS** | Jinhak AI Based Integration System. 진학어플라이 통합 업무 시스템 |
 | **포탈 (Portal)** | jabis 메인 앱. 17개 역할 기반 대시보드를 하나의 앱에서 제공 |
 | **부서앱 (Dept App)** | 특정 부서 전용 앱. 모노레포 구조(`apps/{role}/`), jabis-common을 submodule로 소비 |
 | **역할 (Role)** | 사용자의 직무 유형. 17개 정의 (developer, finance, hr 등) |

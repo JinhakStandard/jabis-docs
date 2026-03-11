@@ -1,6 +1,6 @@
 # JABIS 에코시스템 전체 가이드
 
-> JABIS(Jinhak Business Integration System) 에코시스템을 빠르게 파악하기 위한 종합 가이드입니다.
+> JABIS(Jinhak AI Based Integration System) 에코시스템을 빠르게 파악하기 위한 종합 가이드입니다.
 > 새로운 AI 세션이나 신규 참여자가 이 문서를 먼저 읽으면 전체 그림을 잡을 수 있습니다.
 
 ---
