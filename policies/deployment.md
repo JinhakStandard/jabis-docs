@@ -198,13 +198,29 @@ cd ../jabis && git push
 
 ## 5. PostgreSQL (JABIS DB)
 
-| 항목 | 개발 | 운영 |
-|------|------|------|
-| Host | postgresql-helm.jabis | postgresql-helm.jabis |
+PostgreSQL은 **`jabis` 네임스페이스**에 배포됨 (리포: `postgresql-helm`).
+
+| 항목 | 운영 | Alpha |
+|------|------|-------|
+| Host | postgresql-helm.jabis | postgresql-helm.jabis (동일) |
 | Port | 5432 | 5432 |
-| Database | jabis | jabis |
+| Database | jabis | jabis_alpha |
 | User | jabis_admin | jabis_admin |
-| NodePort | 30432 (활성화) | 비활성화 |
+| NetworkPolicy | jabis, jabis-prod, monitoring | + jabis-alpha |
+
+### Redis
+
+Redis는 **`jabis` 네임스페이스**에 배포됨 (리포: `redis-helm`).
+
+| 항목 | 운영 | Alpha |
+|------|------|-------|
+| Host | redis-helm.jabis | redis-helm.jabis (동일) |
+| Port | 6379 | 6379 |
+| DB | 0 (기본) | 1 |
+| NetworkPolicy | jabis, jabis-prod, monitoring | + jabis-alpha |
+
+> **주의:** 두 서비스 모두 `jabis` 네임스페이스에 있으므로 호스트명은 `*.jabis`이다 (`*.jabis-prod` 아님).
+> 새 환경 추가 시 postgresql-helm, redis-helm의 `values-prod.yaml` → `networkPolicy.allowedNamespaces`에 네임스페이스 추가 필수.
 
 - DB 쿼리 작성 전 반드시 `JABIS-DB-SCHEMA.md` 참조
 
