@@ -31,6 +31,7 @@ jabis-maker/
 │   │   ├── preview.ts         # GET /preview/:projectName/* (SPA 서빙)
 │   │   ├── projects.ts        # GET /api/projects
 │   │   ├── admin.ts           # GET /api/admin/* (관리자 전용)
+│   │   ├── deploy.ts           # 배포 대시보드 API (status/stream, promote, sync)
 │   │   └── users.ts           # POST /api/users (사용자 관리)
 │   ├── services/
 │   │   ├── sessionManager.ts  # 세션 생명주기 관리
@@ -39,6 +40,7 @@ jabis-maker/
 │   │   ├── nightExecutor.ts   # NightExecutor (배치 자동화)
 │   │   ├── nightPersistence.ts # 나이트모드 SQLite 저장
 │   │   ├── projectScanner.ts  # 프로젝트 스캐닝
+│   │   ├── deployManager.ts   # 배포 상태 조회/promote/sync + 인메모리 캐시
 │   │   ├── contextResolver.ts # jabis-docs 컨텍스트 로딩
 │   │   ├── emailNotifier.ts   # 이메일 알림
 │   │   └── teamsNotifier.ts   # Teams 웹훅 알림
@@ -142,7 +144,57 @@ npm run pm2:status        # 상태 확인
 | POST | `/api/users` | Admin | 사용자 CRUD |
 | GET | `/api/admin/online` | Admin | 온라인 사용자 목록 |
 | GET | `/api/admin/logs` | Admin | 대화 로그 필터링 조회 |
+| GET | `/api/deploy/status` | Admin | 전체 배포 상태 조회 (일괄) |
+| GET | `/api/deploy/status/stream` | Admin | SSE 스트리밍 배포 상태 (`?refresh=true`로 캐시 무효화) |
+| GET | `/api/deploy/status/:name` | Admin | 특정 프로젝트 배포 상태 |
+| POST | `/api/deploy/promote` | Admin | alpha → main 운영 배포 (`force` 옵션) |
+| POST | `/api/deploy/sync` | Admin | main → alpha 역동기화 (`force` 옵션) |
 | GET | `/preview/:project/*` | - | 프로젝트 미리보기 서빙 |
+
+## 배포 대시보드 (Deploy Dashboard)
+
+Alpha → 운영 배포를 관리하는 대시보드. 프론트엔드는 `package/src/components/DeployDashboard.tsx`.
+
+### 아키텍처
+
+- **SSE 스트리밍**: `/api/deploy/status/stream` — 프로젝트별 상태를 완료되는 즉시 전송
+- **인메모리 캐시**: 프로젝트 목록 + 상태를 서버 메모리에 캐시
+  - 첫 방문: 전체 스캔 → SSE 스트리밍
+  - 재방문: 캐시된 데이터 즉시 반환(`cached` 이벤트) → 백그라운드 갱신
+  - "새로고침": `?refresh=true`로 캐시 무효화 + 전체 재조회
+- **대상 프로젝트**: `bitbucket-pipelines.yml` 존재 + `origin/alpha` 브랜치 존재
+
+### SSE 이벤트 플로우
+
+| 이벤트 | 데이터 | 설명 |
+|--------|--------|------|
+| `projects` | `string[]` | 프로젝트 이름 목록 (스켈레톤 렌더링용) |
+| `status` | `DeployStatus` | 개별 프로젝트 상태 (도착 즉시) |
+| `skip` | `{ projectName }` | alpha 없는 프로젝트 스킵 알림 |
+| `cached` | `{}` | 캐시 데이터 전송 완료 (이후 fresh 갱신 시작) |
+| `done` | `{}` | 전체 완료 |
+
+### 머지 충돌 처리
+
+- `promote`/`sync` 시 머지 충돌 감지 → `conflictFiles` 배열 반환
+- 프론트엔드에서 충돌 파일 목록 표시 + "강제 머지" 버튼 제공
+- 강제 머지: `git merge -X theirs` (소스 브랜치 우선 자동 해결)
+
+### DeployStatus 타입
+
+```typescript
+interface DeployStatus {
+  projectName: string;
+  hasAlpha: boolean;
+  hasMaster: boolean;
+  alphaAhead: number;    // alpha에만 있는 커밋 수
+  mainAhead: number;     // main에만 있는 커밋 수 (핫픽스 등)
+  alphaCommits: CommitInfo[];
+  mainCommits: CommitInfo[];
+  lastAlphaCommit?: CommitInfo;
+  lastMainCommit?: CommitInfo;
+}
+```
 
 ## WebSocket 프로토콜
 
@@ -202,4 +254,5 @@ npm run pm2:status        # 상태 확인
 | `policies/night-mode.md` | 나이트모드 실행 정책 (프로그래밍 방식 제출 포함) |
 | `policies/concurrent-sessions.md` | 동시 작업 세션 정책 (세션 디렉토리 격리, 머지 충돌 처리) |
 | `policies/deployment.md` | 배포 정책 (push=배포, 30초 간격) |
+| `policies/staging.md` | Alpha 환경 정책 (배포 대시보드의 배포 대상 환경) |
 | `projects/jabis-night-builder.md` | jabis-night-builder (별도 시스템 — 폴링 기반 자동 빌더) |
