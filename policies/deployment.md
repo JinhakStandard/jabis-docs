@@ -16,17 +16,26 @@
 
 ## 2. 배포 파이프라인
 
+### 일반 배포 (Alpha 경유)
+
 ```
-Feature 브랜치 작업 → Push → Bitbucket PR 생성
-→ Reviewer(navskh) 승인 → Merge to main
+alpha 브랜치에서 작업 → push → Alpha 환경 자동 배포
+→ Alpha 환경에서 테스트/검증
+→ alpha → main merge + push
 → Pipeline 트리거 → Docker Build → Harbor Push
 → jabis-helm values 업데이트 → Helm Package → Harbor Push
 → ArgoCD 자동 감지 → K3S 배포
 → Teams 알림
 ```
 
-> **main 직접 push 금지**: 모든 변경은 feature 브랜치 → PR → 승인 → merge 플로우를 따릅니다.
-> 상세 정책은 `policies/git-workflow.md`의 "2.3 main 브랜치 보호 정책" 및 "3. Pull Request 워크플로우" 참조.
+### 긴급 핫픽스
+
+```
+main에서 직접 수정 → push → 운영 환경 즉시 배포
+→ main → alpha 역merge (필수)
+```
+
+> **상세 플로우**: `policies/git-workflow.md`의 "3. 배포 플로우" 참조.
 
 ### ArgoCD 설정 주의사항
 - VALUES FILES 순서: `values.yaml` → `values-{env}.yaml` (순서 중요!)
@@ -47,15 +56,14 @@ alpha 브랜치 push → Bitbucket Pipeline 트리거
 **Alpha → 운영 배포 플로우:**
 
 ```
-1. feature/* 브랜치에서 작업 완료
-2. feature → alpha 머지 (PR 또는 직접 push)
-3. alpha Pipeline → alpha 환경 자동 배포
-4. alpha 환경에서 테스트/검증
-5. alpha → main 머지 (PR → navskh 승인)
-6. main Pipeline → 운영 환경 자동 배포
+1. alpha 브랜치에서 직접 작업 + push
+2. alpha Pipeline → alpha 환경 자동 배포
+3. alpha 환경에서 테스트/검증
+4. alpha → main merge + push
+5. main Pipeline → 운영 환경 자동 배포
 ```
 
-> **상세 브랜치 전략**: `policies/git-workflow.md`의 "alpha 브랜치 전략" 참조.
+> **상세 플로우**: `policies/git-workflow.md`의 "3. 배포 플로우" 참조.
 
 ### Alpha 환경 인프라
 
