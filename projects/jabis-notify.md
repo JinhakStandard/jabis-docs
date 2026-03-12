@@ -113,6 +113,7 @@ npm run typecheck # 타입 체크
 | `corporate-card-request` | 법인카드 배정 요청 |
 | `corporate-card-approved` | 법인카드 배정 결과 |
 | `attendance-approved` | 근태 처리 결과 |
+| `custom` | 자유 형식 (subject, body 직접 지정) |
 
 ## K3S 내부 URL
 
@@ -159,6 +160,7 @@ curl -X POST https://jabis-gateway.jinhakapply.com/api/notify/send \
 | `corporate-card-request` | requestorName, requestorDept, cardName, amount, purpose, requestedAt |
 | `corporate-card-approved` | requestorName, cardName, status(approved/rejected), approvedAt |
 | `attendance-approved` | employeeName, attendanceType, startDate, endDate, status(approved/rejected) |
+| `custom` | subject, body |
 
 ## 호출 서비스
 
