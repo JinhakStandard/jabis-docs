@@ -35,11 +35,9 @@ src/
 │   ├── corporate-card-approved.html  # 법인카드 승인/반려
 │   └── attendance-approved.html      # 근태 승인/반려
 ├── middleware/
-│   ├── auth.ts            # Bearer SERVICE_TOKEN 검증
 │   └── errorHandler.ts    # 커스텀 에러 클래스 + 전역 핸들러
 ├── utils/
-│   ├── logger.ts          # Winston 로거
-│   └── vault.ts           # Vault 시크릿 읽기
+│   └── logger.ts          # Winston 로거
 └── types/
     └── index.ts           # 타입 정의
 ```
@@ -122,9 +120,49 @@ npm run typecheck # 타입 체크
 http://jabis-notify-prod-service.jabis-prod:3200
 ```
 
+## 사용 방법 (gateway 경유)
+
+jabis-notify는 K3S 내부 전용이므로 반드시 **jabis-api-gateway를 경유**해서 호출합니다.
+
+### Gateway 엔드포인트
+
+`POST https://jabis-gateway.jinhakapply.com/api/notify/send`
+
+### 호출 예시
+
+```bash
+curl -X POST https://jabis-gateway.jinhakapply.com/api/notify/send \
+  -H "Content-Type: application/json" \
+  -H "x-user-email: navskh@jinhakapply.com" \
+  -d '{
+    "channels": ["email"],
+    "template": "approval-request",
+    "recipients": {
+      "email": ["approver@jinhakapply.com"]
+    },
+    "data": {
+      "documentName": "2024년 상반기 예산 검토",
+      "requestorName": "홍길동",
+      "requestorDept": "개발팀",
+      "requestedAt": "2024-03-12 09:30",
+      "approvalUrl": "https://jabis.jinhakapply.com/approval/123"
+    }
+  }'
+```
+
+### 템플릿별 data 필드
+
+| 템플릿 | 필수 data 필드 |
+|--------|---------------|
+| `approval-request` | documentName, requestorName, requestorDept, requestedAt, approvalUrl |
+| `approval-complete` | documentName, requestorName, status(approved/rejected), completedAt, approvalUrl |
+| `corporate-card-request` | requestorName, requestorDept, cardName, amount, purpose, requestedAt |
+| `corporate-card-approved` | requestorName, cardName, status(approved/rejected), approvedAt |
+| `attendance-approved` | employeeName, attendanceType, startDate, endDate, status(approved/rejected) |
+
 ## 호출 서비스
 
-- jabis-api-gateway → 결재/근태/법인카드 이벤트 발생 시 호출
+- jabis-api-gateway → 결재/근태/법인카드 이벤트 발생 시 프록시 호출
 
 ## Dockerfile
 
