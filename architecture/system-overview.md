@@ -41,6 +41,7 @@
 │                        지원 서비스                            │
 │  jabis-bitbucket-sync  - Bitbucket 리포/브랜치/의존성 동기화  │
 │  jabis-emergency-console - 긴급 DB 콘솔                      │
+│  jabis-notify          - 통합 알림 (이메일/Teams Webhook)     │
 │  jabis-common          - @jabis/ui, layout, auth, core       │
 │  jabis-helm            - 전체 Helm 배포 관리                  │
 └──────────────────────────────────────────────────────────────┘
@@ -66,6 +67,7 @@
 | jabis-producer | 3000 | jabis.jinhakapply.com/producer | 프로듀서 전용 앱 (API 관리, Maker) |
 | jabis-design-system | 3000 | jabis-design.jinhakapply.com | 디자인 시스템 문서 |
 | jabis-hr | 3000 | jabis.jinhakapply.com/hr | 인사관리 전용 앱 |
+| jabis-notify | 3200 | (내부 전용) | 통합 알림 서비스 (이메일/Teams) |
 
 ---
 
@@ -148,3 +150,4 @@ http://{서비스명}-prod-service.jabis-prod:{포트}
 | jabis-cert | `http://jabis-cert-prod-service.jabis-prod:3000` |
 | jabis-api-gateway | `http://jabis-api-gateway-prod-service.jabis-prod:3100` |
 | jabis-storage | `http://jabis-storage-prod-service.jabis-prod:3400` |
+| jabis-notify | `http://jabis-notify-prod-service.jabis-prod:3200` |

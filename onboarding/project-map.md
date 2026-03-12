@@ -1,6 +1,6 @@
 # JABIS 프로젝트 맵
 
-> JABIS 에코시스템의 14개 프로젝트와 역할을 정리합니다.
+> JABIS 에코시스템의 15개 프로젝트와 역할을 정리합니다.
 
 ---
 
@@ -22,6 +22,7 @@
 | 12 | jabis-design-package | jinhaksa/jabis-design-package | 디자인 토큰 추출 | Node.js |
 | 13 | jabis-helm | jinhaksa/jabis-helm | Helm 배포 관리 | Helm, YAML |
 | 14 | jabis-hr | jinhaksa/jabis-hr | 인사관리 전용 앱 | Vite, React, Zustand |
+| 15 | jabis-notify | jinhaksa/jabis-notify | 통합 알림 서비스 (이메일/Teams) | Express, TypeScript |
 
 ---
 
@@ -41,7 +42,8 @@ jabis-cert (인증)
 
 jabis-api-gateway (API)
   ├── 모든 프론트엔드 앱에서 데이터 조회
-  └── jabis-night-builder가 폴링하여 작업 처리
+  ├── jabis-night-builder가 폴링하여 작업 처리
+  └── jabis-notify에 알림 발송 요청
 
 jabis-helm (배포)
   └── 모든 서비스의 K8S 배포 관리

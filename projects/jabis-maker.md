@@ -97,6 +97,7 @@ npm run pm2:status        # 상태 확인
 | `refresh_tokens` | JWT 리프레시 토큰 (자동 회전) |
 | `conversation_logs` | 대화 기록 (프롬프트, 응답 요약, 토큰 수) |
 | `user_projects` | 사용자별 프로젝트 접근 권한 |
+| `deploy_projects` | 배포 대시보드 대상 프로젝트 (name TEXT PK) |
 
 ## 사용자 역할
 
@@ -149,6 +150,8 @@ npm run pm2:status        # 상태 확인
 | GET | `/api/deploy/status/:name` | Admin | 특정 프로젝트 배포 상태 |
 | POST | `/api/deploy/promote` | Admin | alpha → main 운영 배포 (`force` 옵션) |
 | POST | `/api/deploy/sync` | Admin | main → alpha 역동기화 (`force` 옵션) |
+| GET | `/api/deploy/projects` | Admin | 배포 대상 프로젝트 목록 조회 |
+| POST | `/api/deploy/projects` | Admin | 배포 대상 프로젝트 추가/삭제 (action: add/remove) |
 | GET | `/preview/:project/*` | - | 프로젝트 미리보기 서빙 |
 
 ## 배포 대시보드 (Deploy Dashboard)
@@ -157,20 +160,18 @@ Alpha → 운영 배포를 관리하는 대시보드. 프론트엔드는 `packag
 
 ### 아키텍처
 
-- **정적 프로젝트 목록**: `DEPLOY_PROJECTS` 상수에 하드코딩 (동적 스캔 없음, 즉시 반환)
+- **DB 기반 프로젝트 목록**: `deploy_projects` 테이블에 저장 (초기 시드: 9개 프로젝트, 관리 UI로 추가/삭제)
 - **SSE 스트리밍**: `/api/deploy/status/stream` — 프로젝트별 상태를 완료되는 즉시 전송
 - **인메모리 캐시**: 상태를 서버 메모리에 캐시 — 재방문 시 캐시 즉시 반환 + 백그라운드 갱신
 - **git fetch --prune**: stale remote ref 자동 정리 (삭제된 브랜치 참조 방지)
 - **getMainBranch**: `git rev-parse --verify`로 정확한 main/master 판별
 
-### 대상 프로젝트 (DEPLOY_PROJECTS)
+### 대상 프로젝트 관리
 
-```
-jabis, jabis-api-gateway, jabis-dev, jabis-finance,
-jabis-hr, jabis-producer, jabis-storage, jabis-sysadmin, jabis-teamlead
-```
-
-> 새 프로젝트 추가 시 `src/services/deployManager.ts`의 `DEPLOY_PROJECTS` 배열에 추가
+- 프로젝트 목록은 SQLite `deploy_projects` 테이블에 저장
+- 초기 시드: jabis, jabis-api-gateway, jabis-dev, jabis-finance, jabis-hr, jabis-producer, jabis-storage, jabis-sysadmin, jabis-teamlead
+- 관리 UI: 배포 대시보드 상단 "관리" 버튼 → 프로젝트 추가/삭제
+- API: `GET /api/deploy/projects`, `POST /api/deploy/projects` (action: add/remove)
 
 ### SSE 이벤트 플로우
 
