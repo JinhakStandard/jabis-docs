@@ -180,14 +180,14 @@ jabis-maker 세션에 다음 정보를 추가로 관리합니다:
 
 jabis-maker에 구현해야 할 항목:
 
-- [ ] 세션 생성 시 `.sessions/<session-id>/<project>/` 디렉토리 자동 생성 (git clone)
-- [ ] submodule 초기화 + 최신화 자동 실행
-- [ ] push 직전 submodule 재동기화 로직
-- [ ] push 실패 시 rebase + 재시도 로직
-- [ ] WebSocket `close` 시 세션 디렉토리 삭제
-- [ ] jabis-maker 시작 시 `.sessions/` 전체 정리
-- [ ] 세션 메타데이터 (projectName, sessionDir, startedAt) 관리
-- [ ] `GET /api/sessions` 응답에 세션 디렉토리 정보 포함
+- [x] 세션 생성 시 `.sessions/<session-id>/<project>/` 디렉토리 자동 생성 (git clone)
+- [x] submodule 초기화 + 최신화 자동 실행
+- [x] push 직전 submodule 재동기화 로직 (pre-push hook 자동 설치)
+- [x] push 실패 시 rebase + 재시도 — Claude Code가 자체 판단하여 처리 (별도 구현 불필요)
+- [x] WebSocket `close` 시 세션 디렉토리 삭제 (killSession 경유)
+- [x] jabis-maker 시작 시 `.sessions/` 전체 정리
+- [x] 세션 메타데이터 (projectName, sessionDir, startedAt) 관리
+- [x] `GET /api/sessions` 응답에 세션 디렉토리 정보 포함
 
 ---
 

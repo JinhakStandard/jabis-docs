@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>JABIS Docs</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/docsify-themeable@0/dist/css/theme-simple.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+KR:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      /* Typography */
+      --base-font-family: 'Inter', 'Noto Sans KR', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      --base-font-size: 16.5px;
+      --base-line-height: 1.8;
+      --base-color: #334155;
+
+      /* Theme */
+      --theme-color: #2563eb;
+      --link-color: #2563eb;
+      --link-color--hover: #1d4ed8;
+
+      /* Sidebar */
+      --sidebar-width: 280px;
+      --sidebar-background: #f8fafc;
+      --sidebar-border-color: #e2e8f0;
+      --sidebar-border-width: 1px;
+      --sidebar-padding: 24px 20px 40px;
+      --sidebar-nav-link-color: #475569;
+      --sidebar-nav-link-color--active: #2563eb;
+      --sidebar-nav-link-font-weight: 450;
+      --sidebar-nav-link-font-weight--active: 600;
+      --sidebar-nav-link-padding: 5px 0;
+      --sidebar-nav-strong-color: #0f172a;
+      --sidebar-nav-strong-font-size: 13.5px;
+      --sidebar-nav-strong-font-weight: 700;
+      --sidebar-nav-strong-margin: 20px 0 6px 0;
+      --sidebar-nav-strong-text-transform: uppercase;
+
+      /* Headings */
+      --heading-color: #0f172a;
+      --heading-h1-font-size: 2rem;
+      --heading-h1-font-weight: 700;
+      --heading-h2-font-size: 1.5rem;
+      --heading-h2-font-weight: 600;
+      --heading-h2-border-color: #e2e8f0;
+      --heading-h2-border-style: solid;
+      --heading-h2-border-width: 0 0 1px 0;
+      --heading-h2-padding: 0 0 8px 0;
+      --heading-h3-font-size: 1.25rem;
+      --heading-h3-font-weight: 600;
+
+      /* Code */
+      --code-font-family: 'JetBrains Mono', 'Fira Code', monospace;
+      --code-font-size: 0.85em;
+      --code-inline-color: #d946ef;
+      --code-inline-background: #fdf4ff;
+      --code-inline-border-radius: 4px;
+      --code-inline-padding: 2px 6px;
+      --code-block-border-radius: 10px;
+      --code-block-padding: 18px 20px;
+      --code-block-line-height: 1.6;
+
+      /* Blockquote */
+      --blockquote-border-color: #2563eb;
+      --blockquote-border-width: 3px;
+      --blockquote-background: #eff6ff;
+      --blockquote-border-radius: 0 8px 8px 0;
+
+      /* Content */
+      --content-max-width: 860px;
+
+      /* Cover */
+      --cover-background-color: #1e293b;
+
+      /* Notice / tip */
+      --notice-tip-background: #f0fdf4;
+      --notice-tip-border-color: #22c55e;
+
+      /* Search */
+      --search-background: #f1f5f9;
+      --search-input-color: #334155;
+    }
+
+    /* ==================== Global ==================== */
+    body {
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    /* ==================== Sidebar ==================== */
+    .sidebar {
+      border-right: 1px solid #e2e8f0;
+    }
+
+    .sidebar .app-name-link {
+      font-weight: 700;
+      font-size: 1.15rem;
+      color: #0f172a;
+      letter-spacing: -0.01em;
+    }
+
+    .sidebar .app-name-link strong {
+      color: #2563eb;
+    }
+
+    /* Sidebar section headers */
+    .sidebar-nav > ul > li > strong,
+    .sidebar-nav > ul > li > p > strong {
+      display: block;
+      font-size: 11.5px;
+      font-weight: 700;
+      color: #94a3b8;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin: 24px 0 8px 0;
+      padding: 0;
+    }
+
+    .sidebar-nav > ul > li:first-child > strong,
+    .sidebar-nav > ul > li:first-child > p > strong {
+      margin-top: 8px;
+    }
+
+    /* Sidebar links */
+    .sidebar-nav li a {
+      font-size: 14.5px;
+      color: #475569;
+      transition: color 0.15s, background 0.15s;
+      border-radius: 6px;
+      padding: 4px 10px !important;
+      margin: 1px 0;
+      display: block;
+    }
+
+    .sidebar-nav li a:hover {
+      color: #2563eb;
+      background: #eff6ff;
+      text-decoration: none;
+    }
+
+    .sidebar-nav li.active > a {
+      color: #2563eb;
+      background: #dbeafe;
+      font-weight: 600;
+    }
+
+    /* Sidebar toggle icon */
+    .sidebar-toggle {
+      padding: 0 8px;
+    }
+
+    /* Sidebar scrollbar */
+    .sidebar::-webkit-scrollbar {
+      width: 5px;
+    }
+    .sidebar::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    .sidebar::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 10px;
+    }
+    .sidebar::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+
+    /* ==================== Content ==================== */
+    .markdown-section {
+      padding: 40px 45px 60px;
+    }
+
+    .markdown-section h1 {
+      margin: 0 0 16px 0;
+      letter-spacing: -0.02em;
+    }
+
+    .markdown-section h2 {
+      margin: 40px 0 16px 0;
+      letter-spacing: -0.01em;
+    }
+
+    .markdown-section h3 {
+      margin: 28px 0 12px 0;
+    }
+
+    .markdown-section p {
+      margin: 0 0 16px 0;
+    }
+
+    .markdown-section hr {
+      border: none;
+      border-top: 1px solid #e2e8f0;
+      margin: 28px 0;
+    }
+
+    /* ==================== Code Blocks ==================== */
+    .markdown-section pre {
+      background: #0f172a !important;
+      border-radius: 10px;
+      padding: 18px 20px;
+      margin: 16px 0;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+      position: relative;
+    }
+
+    .markdown-section pre > code {
+      color: #e2e8f0 !important;
+      font-size: 14px;
+      line-height: 1.65;
+      text-shadow: none;
+    }
+
+    /* Prism token colors (dark theme) */
+    .token.comment,
+    .token.prolog,
+    .token.doctype,
+    .token.cdata {
+      color: #64748b !important;
+    }
+    .token.punctuation {
+      color: #94a3b8 !important;
+    }
+    .token.property,
+    .token.tag,
+    .token.constant,
+    .token.symbol,
+    .token.deleted {
+      color: #f472b6 !important;
+    }
+    .token.boolean,
+    .token.number {
+      color: #c084fc !important;
+    }
+    .token.selector,
+    .token.attr-name,
+    .token.string,
+    .token.char,
+    .token.builtin,
+    .token.inserted {
+      color: #34d399 !important;
+    }
+    .token.operator,
+    .token.entity,
+    .token.url,
+    .language-css .token.string,
+    .style .token.string,
+    .token.variable {
+      color: #67e8f9 !important;
+    }
+    .token.atrule,
+    .token.attr-value,
+    .token.function,
+    .token.class-name {
+      color: #60a5fa !important;
+    }
+    .token.keyword {
+      color: #c084fc !important;
+    }
+    .token.regex,
+    .token.important {
+      color: #fbbf24 !important;
+    }
+
+    /* Inline code */
+    .markdown-section code:not([class*="lang-"]):not([class*="language-"]) {
+      background: #f1f5f9;
+      color: #e11d48;
+      padding: 2px 7px;
+      border-radius: 5px;
+      font-size: 0.85em;
+      font-weight: 500;
+    }
+
+    /* Copy code button */
+    .docsify-copy-code-button {
+      font-size: 12px !important;
+      border-radius: 6px !important;
+      padding: 2px 8px !important;
+      background: rgba(255, 255, 255, 0.1) !important;
+      color: #94a3b8 !important;
+      transition: all 0.2s !important;
+    }
+    .docsify-copy-code-button:hover {
+      background: rgba(255, 255, 255, 0.2) !important;
+      color: #e2e8f0 !important;
+    }
+
+    /* ==================== Tables ==================== */
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin: 16px 0;
+      font-size: 15px;
+      display: table;
+    }
+    th, td {
+      padding: 11px 16px;
+      text-align: left;
+      border: 1px solid #e2e8f0;
+    }
+    th {
+      background: #f1f5f9;
+      font-weight: 600;
+      color: #334155;
+      font-size: 14px;
+    }
+    td {
+      color: #475569;
+    }
+    tr:hover td {
+      background: #f8fafc;
+    }
+
+    /* ==================== Blockquote ==================== */
+    .markdown-section blockquote {
+      border-left: 3px solid #2563eb;
+      background: #eff6ff;
+      border-radius: 0 8px 8px 0;
+      padding: 14px 18px;
+      margin: 16px 0;
+      color: #1e40af;
+      font-size: 15px;
+    }
+
+    .markdown-section blockquote p {
+      margin: 0;
+    }
+
+    /* ==================== Lists ==================== */
+    .markdown-section ul,
+    .markdown-section ol {
+      padding-left: 24px;
+    }
+
+    .markdown-section li {
+      margin: 4px 0;
+    }
+
+    /* ==================== Links ==================== */
+    .markdown-section a {
+      color: #2563eb;
+      text-decoration: none;
+      border-bottom: 1px solid transparent;
+      transition: border-color 0.15s;
+    }
+
+    .markdown-section a:hover {
+      border-bottom-color: #2563eb;
+    }
+
+    /* ==================== Search ==================== */
+    .search {
+      padding: 10px 16px !important;
+    }
+
+    .search input {
+      border-radius: 8px !important;
+      border: 1px solid #e2e8f0 !important;
+      background: #fff !important;
+      padding: 8px 12px !important;
+      font-size: 13.5px !important;
+      color: #334155 !important;
+      transition: border-color 0.2s, box-shadow 0.2s !important;
+    }
+
+    .search input:focus {
+      border-color: #2563eb !important;
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1) !important;
+      outline: none !important;
+    }
+
+    .search input::placeholder {
+      color: #94a3b8 !important;
+    }
+
+    .search .matching-post {
+      border-bottom: 1px solid #f1f5f9;
+      padding: 10px 0;
+    }
+
+    .search .matching-post .search-keyword {
+      color: #2563eb;
+      font-weight: 600;
+    }
+
+    /* ==================== Pagination ==================== */
+    .docsify-pagination-container {
+      border-top: 1px solid #e2e8f0 !important;
+      margin: 40px 0 0 !important;
+      padding: 20px 0 !important;
+    }
+
+    .pagination-item-label {
+      color: #94a3b8 !important;
+      font-size: 12px !important;
+      text-transform: uppercase !important;
+      letter-spacing: 0.05em !important;
+    }
+
+    .pagination-item-title {
+      color: #2563eb !important;
+      font-weight: 600 !important;
+    }
+
+    /* ==================== Responsive ==================== */
+    @media (max-width: 768px) {
+      .markdown-section {
+        padding: 20px 16px 40px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="app">로딩 중...</div>
+  <script>
+    window.$docsify = {
+      name: '<strong>JABIS</strong> Docs',
+      repo: false,
+      basePath: '/docs/',
+      loadSidebar: true,
+      subMaxLevel: 3,
+      auto2top: true,
+      notFoundPage: '_404.md',
+      alias: {
+        '/.*/_sidebar.md': '/_sidebar.md',
+      },
+      search: {
+        placeholder: '검색...',
+        noData: '결과 없음',
+        paths: 'auto',
+        depth: 3,
+      },
+      pagination: {
+        previousText: '이전',
+        nextText: '다음',
+        crossChapter: true,
+      },
+      copyCode: {
+        buttonText: '복사',
+        errorText: '오류',
+        successText: '복사됨!',
+      },
+    };
+  </script>
+  <!-- Docsify core -->
+  <script src="https://cdn.jsdelivr.net/npm/docsify@4/lib/docsify.min.js"></script>
+  <!-- Plugins -->
+  <script src="https://cdn.jsdelivr.net/npm/docsify@4/lib/plugins/search.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/docsify-copy-code@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/docsify-pagination@2/dist/docsify-pagination.min.js"></script>
+  <!-- Syntax highlight -->
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1/components/prism-bash.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1/components/prism-typescript.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1/components/prism-javascript.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1/components/prism-json.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1/components/prism-yaml.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1/components/prism-sql.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1/components/prism-jsx.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1/components/prism-tsx.min.js"></script>
+</body>
+</html>
