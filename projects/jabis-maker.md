@@ -157,12 +157,20 @@ Alpha → 운영 배포를 관리하는 대시보드. 프론트엔드는 `packag
 
 ### 아키텍처
 
+- **정적 프로젝트 목록**: `DEPLOY_PROJECTS` 상수에 하드코딩 (동적 스캔 없음, 즉시 반환)
 - **SSE 스트리밍**: `/api/deploy/status/stream` — 프로젝트별 상태를 완료되는 즉시 전송
-- **인메모리 캐시**: 프로젝트 목록 + 상태를 서버 메모리에 캐시
-  - 첫 방문: 전체 스캔 → SSE 스트리밍
-  - 재방문: 캐시된 데이터 즉시 반환(`cached` 이벤트) → 백그라운드 갱신
-  - "새로고침": `?refresh=true`로 캐시 무효화 + 전체 재조회
-- **대상 프로젝트**: `bitbucket-pipelines.yml` 존재 + `origin/alpha` 브랜치 존재
+- **인메모리 캐시**: 상태를 서버 메모리에 캐시 — 재방문 시 캐시 즉시 반환 + 백그라운드 갱신
+- **git fetch --prune**: stale remote ref 자동 정리 (삭제된 브랜치 참조 방지)
+- **getMainBranch**: `git rev-parse --verify`로 정확한 main/master 판별
+
+### 대상 프로젝트 (DEPLOY_PROJECTS)
+
+```
+jabis, jabis-api-gateway, jabis-dev, jabis-finance,
+jabis-hr, jabis-producer, jabis-storage, jabis-sysadmin, jabis-teamlead
+```
+
+> 새 프로젝트 추가 시 `src/services/deployManager.ts`의 `DEPLOY_PROJECTS` 배열에 추가
 
 ### SSE 이벤트 플로우
 
