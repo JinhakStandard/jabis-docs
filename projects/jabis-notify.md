@@ -8,7 +8,7 @@
 
 - Express 4 + TypeScript
 - Node.js 20
-- nodemailer (Office365 SMTP)
+- nodemailer (내부 SMTP 릴레이)
 - Zod (환경변수 검증)
 - Winston (로깅)
 
@@ -65,18 +65,15 @@ npm run typecheck # 타입 체크
 |------|--------|------|
 | NODE_ENV | development | 실행 환경 |
 | PORT | 3200 | 서버 포트 |
-| SMTP_HOST | smtp.office365.com | SMTP 호스트 |
-| SMTP_PORT | 587 | SMTP 포트 |
-| SMTP_USER | jabis@jinhakapply.com | SMTP 사용자 |
-| SMTP_PASS | (vault) | SMTP 비밀번호 |
+| SMTP_HOST | 192.168.32.39 | SMTP 호스트 (내부 릴레이) |
+| SMTP_PORT | 25 | SMTP 포트 |
 | SMTP_FROM | jabis@jinhakapply.com | 발신자 주소 |
-| SERVICE_TOKEN | (vault) | 내부 서비스 인증 토큰 |
 
 ## API 스펙
 
 ### POST /api/notify/send
 
-**인증**: `Authorization: Bearer {SERVICE_TOKEN}`
+**인증**: 없음 (K3S 내부 네트워크 전용)
 
 **요청**:
 ```json
@@ -133,7 +130,7 @@ http://jabis-notify-prod-service.jabis-prod:3200
 
 - node:20-alpine 멀티스테이지 빌드
 - non-root user (nodejs:1001)
-- Vault Agent `/jabis-notify/keys` 마운트
+- Vault 불필요 (시크릿 없음)
 - HEALTHCHECK: `GET /health`
 
 ## Bitbucket Pipeline
